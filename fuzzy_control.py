@@ -180,11 +180,13 @@ class FuzzySteer:
 
 		return out_defuzzification
 
-#class FuzzyThrottle:
+
+class FuzzyThrottle:
+	
 
 
+class FuzzyBrake:
 
-#class FuzzyBrake:
 
 
 if __name__ == '__main__':
