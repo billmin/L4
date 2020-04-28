@@ -1,99 +1,70 @@
-import os, sys
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# standard libraries
+import numpy as np
+import rospy
+# import pyqtgraph as pg
+import time
+import copy
+import os
+
+# recieved messages
+#from guider_msgs.msg import SidePoints
+
+# published messages
+#from planner_msgs.msg import Trajectory, InfoFrenetPlanner
+
+def callback_navigation(navi_info):
+	global lidar_perceptions, lidar_perceptions_received
+	lidar_perceptions = data_lidar_perception
+	lidar_perceptions_received = True
+	# print(lidar_perceptions.perceptions[0])
+
+def listner():
+	rospy.init_node("decision_maker", anonymous=True)
+	# subscribers
+	rospy.Subscriber("/obstacle", SidePoints, callback_obstacle, queue_size=1)
+	rospy.Subscriber("/gps_info", Gprmc, callback_gps, queue_size=1)
+	rospy.Subscriber("/imu_info", Imu, callback_imu)
+	rospy.Subscriber("/path_points", PlanToControl, callback_waypoints, queue_size=1)
+	rospy.Subscriber("/stopline_detect", Float32MultiArray, callback_stopline_detect, queue_size=1)
+	rospy.Subscriber("/center_line", Float32MultiArray, callback_center_line, queue_size=1)
+	rospy.Subscriber("/rs_percept_result", PerceptionListMsg, callback_lidar_perception, queue_size=1)
+
+	# publishers
+	pub_perception = rospy.Publisher('planner_obs_dynamic', PerceptionMsg, queue_size=1)
+
+	rate = rospy.Rate(10)
+
+	global obstacle
+	global received_new_obstacle
+	global unprocessed_obstacle
+	obstacle = SidePoints().side
+	received_new_obstacle = False
+
+	#global center_line
+	#center_line = Float32MultiArray().data
+	#center_line_pre = copy.copy(center_line)
+
+	global lidar_perceptions, lidar_perceptions_received
+	lidar_perceptions = PerceptionListMsg()
+	lidar_perceptions_received = False
 
 
-class XAction:
-	turn_left = 0
-	go_straight = 1
-	turn_right = 2
+	while not rospy.is_shutdown():
 	
-class YAction:
-	constant = 0
-	speed_up = 1
-	speed_down = 2
+		# time control
+		loop_time_end = time.time()
+		time_total = loop_time_end - t_start_loop
 
-class Direction:
-	forward = 0
-	backward = 1
-
-class FPVOrientation:
-	'''
-		o
-	x	|	x
-		|
-	o---+---o
-		|
-	x	|	x
-		o
-	'''
-	ahead = 0
-	rear = 1
-	left = 2
-	right = 3
-	left_ahead = 4
-	left_rear = 5
-	right_ahead = 6
-	right_rear = 7
-
-class Velocity:
-	stop = 0
-	moving_forward = 1
-	moving_backward = 2
+		rate.sleep()
+	rospy.spin()
 
 
-def action_encoder(x_action, y_action, y_direction):
-	return x_action | (y_action<<2) | (y_direction<<4)
-
+if __name__ == '__main__':
+	listner()
 	
-def action_decoder(encoded_action):
-	x_mask = 0b11
-	y_mask = 0b1100
-	direct_mask = 0b10000
-	x_action = encoded_action & x_mask
-	y_action = encoded_action & y_mask
-	y_direction = encoded_action & direct_mask
-	return x_action, y_action, y_direction
-
-def coarse_action(fpvo, vel):
-	if fpvo == FPVOrientation.ahead:
-		if vel == Velocity.stop:
-			return action_encoder(XAction.go_straight, YAction.speed_up, Direction.forward)
-		elif vel == Velocity.moving_forward:
-			return action_encoder(XAction.go_straight, YAction.constant, Direction.forward)
-		else:
-			return action_encoder(XAction.go_straight, YAction.speed_down, Direction.backward)
-
-	elif fpvo == FPVOrientation.rear:
-		if vel == Velocity.stop:
-			return action_encoder(XAction.go_straight, YAction.speed_up, Direction.backward)
-		elif vel == Velocity.moving_forward:
-			return action_encoder(XAction.go_straight, YAction.speed_down, Direction.forward)
-		else:
-			return action_encoder(XAction.go_straight, YAction.constant, Direction.backward)
-
-	elif fpvo == FPVOrientation.left:
-		if vel == Velocity.stop:
-			return action_encoder(XAction.turn_left, YAction.speed_up, Direction.forward)
-		elif vel == Velocity.moving_forward:
-			return action_encoder(XAction.turn_left, YAction.constant, Direction.forward)
-		else:
-			return action_encoder(XAction.turn_left, YAction.speed_down, Direction.backward)
-			
-	elif fpvo == FPVOrientation.right:
-		if vel == Velocity.stop:
-			return action_encoder(XAction.turn_right, YAction.speed_up, Direction.forward)
-		elif vel == Velocity.moving_forward:
-			return action_encoder(XAction.turn_right, YAction.constant, Direction.forward)
-		else:
-			return action_encoder(XAction.turn_right, YAction.speed_down, Direction.backward)
-			
-	elif fpvo == FPVOrientation.left_ahead:
-
-	elif fpvo == FPVOrientation.left_rear:
-
-	elif fpvo == FPVOrientation.right_ahead:
-
-	else:
-		
 
 
 

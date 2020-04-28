@@ -182,11 +182,11 @@ class FuzzySteer:
 
 
 class FuzzyThrottle:
-	
+	pass
 
 
 class FuzzyBrake:
-
+	pass
 
 
 if __name__ == '__main__':
