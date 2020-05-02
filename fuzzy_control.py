@@ -180,8 +180,10 @@ class FuzzySteer:
 
 		return out_defuzzification
 
-#class FuzzyThrottle:
 
+class FuzzyThrottle:
+	def __init__(self,):
+		
 
 
 #class FuzzyBrake:
