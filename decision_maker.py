@@ -10,6 +10,7 @@ import os
 
 # recieved messages
 from navi_msg import NaviCommand
+from decision_basis_msgs.msgs import SurroundingBuild
 from decision_basis_msgs.msgs import LaneKeepBasis
 from decision_basis_msgs.msgs import LaneChangeToLeftBasis
 from decision_basis_msgs.msgs import LaneChangeToRightBasis
@@ -33,6 +34,10 @@ from control_msgs.msgs import XControlStrategy, YControlStrategy
 def callback_navigation(data_navi):
 	global navi_command
 	navi_command = data_navi
+
+def callback_surrounding_build(data_percetions):
+	global surrounding
+	surrounding = data_percetions
 
 # ------ basic tasks ------
 # 1. lane keep
@@ -121,6 +126,7 @@ def listener():
 	rospy.init_node("decision_maker", anonymous=True)
 	# subscribers
 	rospy.Subscriber("/navigation_command", NaviCommand, callback_navigation, queue_size=1)
+	rospy.Subscriber("/decision_basis/surrounding_build", SurroundingBuild, callback_surrounding_build, queue_size=1)
 	rospy.Subscriber("/decision_basis/lane_keep", LaneKeepBasis, callback_lane_keep, queue_size=1)
 	rospy.Subscriber("/decision_basis/lane_change_to_left", LaneChangeToLeftBasis, callback_lane_change_to_left, queue_size=1)
 	rospy.Subscriber("/decision_basis/lane_change_to_right", LaneChangeToRightBasis, callback_lane_change_to_right, queue_size=1)
@@ -147,6 +153,9 @@ def listener():
 	# navigation info
 	global navi_command
 	navi_command = NaviCommand()
+	# surrounding build
+	global surrounding
+	surrounding = SurroundingBuild()
 	# decision basis for lane keep
 	global lane_keep_basis
 	lane_keep_basis = LaneKeepBasis()
