@@ -206,6 +206,7 @@ def listener():
 	temporary_stop_by_roadside_basis = TemporaryStopByRoadsideBasis()
 
 	while not rospy.is_shutdown():
+		
 		rate.sleep()
 
 	rospy.spin()

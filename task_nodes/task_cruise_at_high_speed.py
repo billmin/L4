@@ -11,7 +11,7 @@ import os
 # recieved messages
 from decision_basis_msgs.msgs import CruiseAtHighSpeedBasis
 
-def callback_##(data_steering_strategy):
+def callback_todo(data_todo):
 	pass
 
 def listener():
@@ -21,7 +21,7 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_cruise_at_high_speed_basis = rospy.Publisher("/decision_basis/lane_keep", CruiseAtHighSpeedBasis, queue_size=1)
+	pub_cruise_at_high_speed_basis = rospy.Publisher("/decision_basis/cruise_at_high_speed", CruiseAtHighSpeedBasis, queue_size=1)
 
 	rate = rospy.Rate(50)
 
