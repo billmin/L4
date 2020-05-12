@@ -205,6 +205,7 @@ def listener():
 	global temporary_stop_by_roadside_basis
 	temporary_stop_by_roadside_basis = TemporaryStopByRoadsideBasis()
 
+	# navigation based
 	while not rospy.is_shutdown():
 		
 		rate.sleep()

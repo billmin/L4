@@ -1,3 +1,6 @@
-# navigation command
-int8 navi_command
-
+# navigation instruction
+int16 navi_instruction
+float32 distance_before_next_instruction
+float32 latitude_now
+float32 longitude_now
+float32 speed_limit
