@@ -18,16 +18,19 @@ def is_patient_for_hindering(patience=PATIENCE.PATIENT.value, urgent=False):
 	# roll the dice
 	p = random.random()
 	
-	if patience == PATIENCE.PATIENT.value:
-		if 0.0 <= p <= high:
-			return True
+	if not urgent:
+		if patience == PATIENCE.PATIENT.value:
+			if 0.0 <= p <= high:
+				return True
+			else:
+				return False
 		else:
-			return False
+			if 0.0 <= p <= low:
+				return True
+			else:
+				return False
 	else:
-		if 0.0 <= p <= low:
-			return True
-		else:
-			return False
+		return False
 
 
 def is_determined_to_bear_risk(driving_style=DrvStyle.NORMAL.value, urgent=False):
