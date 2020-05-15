@@ -1,16 +1,8 @@
 import os, sys
 from enum import Enum
+from complementary import DrvStyle, PATIENCE
 import random
 
-
-class DrvStyle(Enum):
-	MILD    = 0
-	NORMAL  = 1
-	RADICAL = 2
-
-class PATIENCE(Enum):
-	PATIENT   = 0
-	IMPATIENT = 1
 
 def is_patient_for_hindering(patience=PATIENCE.PATIENT.value, urgent=False):
 	low = 0.3	

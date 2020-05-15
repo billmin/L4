@@ -27,6 +27,7 @@ from decision_basis_msgs.msgs import OvertakeFromRightBasis
 from decision_basis_msgs.msgs import CarFollowInCityBasis
 from decision_basis_msgs.msgs import CruiseAtHighSpeedBasis
 from decision_basis_msgs.msgs import TemporaryStopByRoadsideBasis
+from complementary import NaviCommand
 
 # published messages
 from control_msgs.msgs import XControlStrategy, YControlStrategy
@@ -207,7 +208,33 @@ def listener():
 
 	# navigation based
 	while not rospy.is_shutdown():
+		navi_instruction = navi_command.navi_instruction
+		if navi_instruction == NaviCommand.GO_STRAIGHT.value:
+			
+		elif navi_instruction == NaviCommand.TURN_LEFT_AT_CROSS.value:
+			
+		elif navi_instruction == NaviCommand.TURN_RIGHT_AT_CROSS.value:
+
+		elif navi_instruction == NaviCommand.AHEAD_LEFT_AT_FORK.value:
+
+		elif navi_instruction == NaviCommand.AHEAD_RIGHT_AT_FORK.value:
+
+
+		elif navi_instruction == NaviCommand.TURN_LEFT_TOWARDS_REAR.value:
+
+
+		elif navi_instruction == NaviCommand.TURN_RIGHT_TOWARDS_REAR.value:
+
+
+		elif navi_instruction == NaviCommand.U_TURN.value:
+
+
+		elif navi_instruction == NaviCommand.TUNNEL.value:
+
+
+		elif navi_instruction == NaviCommand.ARRIVED.value:
 		
+
 		rate.sleep()
 
 	rospy.spin()
