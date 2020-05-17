@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import UTurnBasis
+from multi_task_msgs import UTurnBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_u_turn_basis = rospy.Publisher("/decision_basis/u_turn", UTurnBasis, queue_size=1)
+	pub_u_turn_basis = rospy.Publisher("/multi_task/u_turn", UTurnBasis, queue_size=1)
+	pub_u_turn_decision = rospy.Publisher("/u_turn/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

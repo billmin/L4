@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import CarFollowInCityBasis
+from multi_task_msgs import CarFollowInCityBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_car_follow_in_city_basis = rospy.Publisher("/decision_basis/car_follow_in_city", CarFollowInCityBasis, queue_size=1)
+	pub_car_follow_in_city_basis = rospy.Publisher("/multi_task/car_follow_in_city", CarFollowInCityBasis, queue_size=1)
+	pub_car_follow_in_city_decision = rospy.Publisher("/car_follow_in_city/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

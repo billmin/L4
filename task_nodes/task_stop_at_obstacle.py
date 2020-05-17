@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import StopAtObstacleBasis
+from multi_task_msgs import StopAtObstacleBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", XControlStrategy, callback_steering_strategy, queue_size=1)
 
 	# publishers
-	pub_stop_at_obstacle_basis = rospy.Publisher("/decision_basis/stop_at_obstacle", StopAtObstacleBasis, queue_size=1)
+	pub_stop_at_obstacle_basis = rospy.Publisher("/multi_task/stop_at_obstacle", StopAtObstacleBasis, queue_size=1)
+	pub_stop_at_obstacle_decision = rospy.Publisher("/stop_at_obstacle/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import TurnLeftAtCrossBasis
+from multi_task_msgs import TurnLeftAtCrossBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_turn_left_at_cross_basis = rospy.Publisher("/decision_basis/turn_left_at_cross", TurnLeftAtCrossBasis, queue_size=1)
+	pub_turn_left_at_cross_basis = rospy.Publisher("/multi_task/turn_left_at_cross", TurnLeftAtCrossBasis, queue_size=1)
+	pub_turn_left_at_cross_decision = rospy.Publisher("/turn_left_at_cross/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import LaneKeepBasis
+from multi_task_msgs import LaneKeepBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_lane_keep_basis = rospy.Publisher("/decision_basis/lane_keep", LaneKeepBasis, queue_size=1)
+	pub_lane_keep_basis = rospy.Publisher("/multi_task/lane_keep", LaneKeepBasis, queue_size=1)
+	pub_lane_keep_decision = rospy.Publisher("/lane_keep/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

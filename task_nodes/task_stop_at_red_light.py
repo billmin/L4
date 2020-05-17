@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import StopAtRedLightBasis
+from multi_task_msgs import StopAtRedLightBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_stop_at_red_light_basis = rospy.Publisher("/decision_basis/stop_at_red_light", StopAtRedLightBasis, queue_size=1)
+	pub_stop_at_red_light_basis = rospy.Publisher("/multi_task/stop_at_red_light", StopAtRedLightBasis, queue_size=1)
+	pub_stop_at_red_light_decision = rospy.Publisher("/stop_at_red_light/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import TemporaryStopByRoadsideBasis
+from multi_task_msgs import TemporaryStopByRoadsideBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_temporary_stop_by_roadside_basis = rospy.Publisher("/decision_basis/temporary_stop_by_roadside", TemporaryStopByRoadsideBasis, queue_size=1)
+	pub_temporary_stop_by_roadside_basis = rospy.Publisher("/multi_task/temporary_stop_by_roadside", TemporaryStopByRoadsideBasis, queue_size=1)
+	pub_temporary_stop_by_roadside_decision = rospy.Publisher("/temporary_stop_by_roadside/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

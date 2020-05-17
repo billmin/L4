@@ -9,7 +9,8 @@ import copy
 import os
 
 # recieved messages
-from decision_basis_msgs.msgs import BypassObstacleFromRightBasis
+from multi_task_msgs import BypassObstacleFromRightBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -21,7 +22,8 @@ def listener():
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_bypass_obstacle_from_right_basis = rospy.Publisher("/decision_basis/bypass_obstacle_from_right", BypassObstacleFromRightBasis, queue_size=1)
+	pub_bypass_obstacle_from_right_basis = rospy.Publisher("/multi_task/bypass_obstacle_from_right", BypassObstacleFromRightBasis, queue_size=1)
+	pub_bypass_obstacle_from_right_decision = rospy.Publisher("/bypass_obstacle_from_right/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 
