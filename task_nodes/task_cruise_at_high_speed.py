@@ -10,6 +10,7 @@ import os
 
 # recieved messages
 from multi_task_msgs import CruiseAtHighSpeedBasis
+from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
@@ -22,6 +23,7 @@ def listener():
 
 	# publishers
 	pub_cruise_at_high_speed_basis = rospy.Publisher("/multi_task/cruise_at_high_speed", CruiseAtHighSpeedBasis, queue_size=1)
+	pub_cruise_at_high_speed_decision = rospy.Publisher("/cruise_at_high_speed/decision")
 
 	rate = rospy.Rate(50)
 
