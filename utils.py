@@ -1,6 +1,6 @@
 import os, sys
 from enum import Enum
-from complementary import DrvStyle, PATIENCE
+from global_vars import DrvStyle, PATIENCE
 import random
 
 
