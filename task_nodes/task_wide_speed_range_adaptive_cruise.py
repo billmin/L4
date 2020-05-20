@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import StopAtRedLightBasis
+from multi_task_msgs import WideSpeedRangeAdaptiveCruiseBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_stop_at_red_light", anonymous=True)
+	rospy.init_node("task_wide_speed_range_adaptive_cruise", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_stop_at_red_light_basis = rospy.Publisher("/multi_task/stop_at_red_light", StopAtRedLightBasis, queue_size=1)
-	pub_stop_at_red_light_decision = rospy.Publisher("/stop_at_red_light/decision", Decision, queue_size=1)
+	pub_wide_speed_range_adaptive_cruise_basis = rospy.Publisher("/multi_task/wide_speed_range_adaptive_cruise", WideSpeedRangeAdaptiveCruiseBasis, queue_size=1)
+	pub_wide_speed_range_adaptive_cruise_decision = rospy.Publisher("/wide_speed_range_adaptive_cruise/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

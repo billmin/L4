@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import CruiseAtHighSpeedBasis
+from multi_task_msgs import BypassObstacleOnRightBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_cruise_at_high_speed", anonymous=True)
+	rospy.init_node("task_bypass_obstacle_on_right", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_cruise_at_high_speed_basis = rospy.Publisher("/multi_task/cruise_at_high_speed", CruiseAtHighSpeedBasis, queue_size=1)
-	pub_cruise_at_high_speed_decision = rospy.Publisher("/cruise_at_high_speed/decision")
+	pub_bypass_obstacle_on_right_basis = rospy.Publisher("/multi_task/bypass_obstacle_on_right", BypassObstacleOnRightBasis, queue_size=1)
+	pub_bypass_obstacle_on_right_decision = rospy.Publisher("/bypass_obstacle_on_right/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

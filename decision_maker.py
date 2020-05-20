@@ -26,7 +26,7 @@ def callback_surrounding_build(data_percetions):
 	surrounding = data_percetions
 
 # ------ basic tasks ------
-# 1. lane keep
+# 1. wide speed range adaptive cruise
 # 2. lane change to left
 # 3. lane change to right
 # 4. turn left at cross
@@ -34,18 +34,18 @@ def callback_surrounding_build(data_percetions):
 # 6. go straight at cross
 # 7. u turn
 # 8. stop at obstacle
-# 9. stop at red light
-# 10. bypass obstacle from left
-# 11. bypass obstacle from right
-# 12. overtake from left
-# 13. overtake from right
-# 14. car follow in city
-# 15. cruise at high speed
+# 9. halt_behind_stop_line
+# 10. slow down for pedestrian traverse
+# 11. bypass obstacle on left
+# 12. bypass obstacle on right
+# 13. overtake on left
+# 14. overtake on right
+# 15. car follow in city
 # 16. temporary stop by roadside
 # ---------------------------
-def callback_lane_keep(data_decision):
-	global lane_keep_decision
-	lane_keep_basis = data_decision
+def callback_wide_speed_range_adaptive_cruise(data_decision):
+	global wide_speed_range_adaptive_cruise_decision
+	wide_speed_range_adaptive_cruise_decision = data_decision
 
 def callback_lane_change_to_left(data_decision):
 	global lane_change_to_left_decision
@@ -75,33 +75,29 @@ def callback_stop_at_obstacle(data_decision):
 	global stop_at_obstacle_decision
 	stop_at_obstacle_basis = data_decision
 
-def callback_stop_at_red_light(data_decision):
-	global stop_at_red_light_decision
-	stop_at_red_light_basis = data_decision
+def callback_halt_behind_stop_line(data_decision):
+	global halt_behind_stop_line_decision
+	halt_behind_stop_line_basis = data_decision
 
-def callback_bypass_obstacle_from_left(data_decision):
-	global bypass_obstacle_from_left_decision
-	bypass_obstacle_from_left_basis = data_decision
+def callback_slow_down_for_pedestrian_traverse(data_decision):
+	global slow_down_for_pedestrian_traverse_decision
+	slow_down_for_pedestrian_traverse_decision = data_decision
 
-def callback_bypass_obstacle_from_right(data_decision):
-	global bypass_obstacle_from_right_decision
-	bypass_obstacle_from_right_basis = data_decision
+def callback_bypass_obstacle_on_left(data_decision):
+	global bypass_obstacle_on_left_decision
+	bypass_obstacle_on_left_basis = data_decision
 
-def callback_overtake_from_left(data_decision):
-	global overtake_from_left_decision
-	overtake_from_left_basis = data_decision
+def callback_bypass_obstacle_on_right(data_decision):
+	global bypass_obstacle_on_right_decision
+	bypass_obstacle_on_right_basis = data_decision
 
-def callback_overtake_from_right(data_decision):
-	global overtake_from_right_decision
-	overtake_from_right_basis = data_decision
+def callback_overtake_on_left(data_decision):
+	global overtake_on_left_decision
+	overtake_on_left_basis = data_decision
 
-def callback_car_follow_in_city(data_decision):
-	global car_follow_in_city_decision
-	car_follow_in_city_basis = data_decision
-
-def callback_cruise_at_high_speed(data_decision):
-	global cruise_at_high_speed_decision
-	cruise_at_high_speed_basis = data_decision
+def callback_overtake_on_right(data_decision):
+	global overtake_on_right_decision
+	overtake_on_right_basis = data_decision
 
 def callback_temporary_stop_by_roadside(data_decision):
 	global temporary_stop_by_roadside_decision
@@ -113,7 +109,7 @@ def listener():
 	# subscribers
 	rospy.Subscriber("/navigation_command", NaviCommand, callback_navigation, queue_size=1)
 	rospy.Subscriber("/multi_task/surrounding_build", SurroundingBuild, callback_surrounding_build, queue_size=1)
-	rospy.Subscriber("/lane_keep/decision", Decision, callback_lane_keep, queue_size=1)
+	rospy.Subscriber("/wide_speed_range_adaptive_cruise/decision", Decision, callback_wide_speed_range_adaptive_cruise, queue_size=1)
 	rospy.Subscriber("/lane_change_to_left/decision", Decision, callback_lane_change_to_left, queue_size=1)
 	rospy.Subscriber("/lane_change_to_right/decision", Decision, callback_lane_change_to_right, queue_size=1)
 	rospy.Subscriber("/turn_left_at_cross/decision", Decision, callback_turn_left_at_cross, queue_size=1)
@@ -121,13 +117,12 @@ def listener():
 	rospy.Subscriber("/go_straight_at_cross/decision", Decision, callback_go_straight_at_cross, queue_size=1)
 	rospy.Subscriber("/u_turn/decision", Decision, callback_u_turn, queue_size=1)
 	rospy.Subscriber("/stop_at_obstacle/decision", Decision, callback_stop_at_obstacle, queue_size=1)
-	rospy.Subscriber("/stop_at_red_light/decision", Decision, callback_stop_at_red_light, queue_size=1)
-	rospy.Subscriber("/bypass_obstacle_from_left/decision", Decision, callback_bypass_obstacle_from_left, queue_size=1)
-	rospy.Subscriber("/bypass_obstacle_from_right/decision", Decision, callback_bypass_obstacle_from_right, queue_size=1)
-	rospy.Subscriber("/overtake_from_left/decision", Decision, callback_overtake_from_left, queue_size=1)
-	rospy.Subscriber("/overtake_from_right/decision", Decision, callback_overtake_from_right, queue_size=1)
-	rospy.Subscriber("/car_follow_in_city/decision", Decision, callback_car_follow_in_city, queue_size=1)
-	rospy.Subscriber("/cruise_at_high_speed/decision", Decision, callback_cruise_at_high_speed, queue_size=1)
+	rospy.Subscriber("/halt_behind_stop_line/decision", Decision, callback_halt_behind_stop_line, queue_size=1)
+	rospy.Subscriber("/slow_down_for_pedestrian_traverse/decision", Decision, callback_slow_down_for_pedestrian_traverse, queue_size=1)
+	rospy.Subscriber("/bypass_obstacle_on_left/decision", Decision, callback_bypass_obstacle_on_left, queue_size=1)
+	rospy.Subscriber("/bypass_obstacle_on_right/decision", Decision, callback_bypass_obstacle_on_right, queue_size=1)
+	rospy.Subscriber("/overtake_on_left/decision", Decision, callback_overtake_on_left, queue_size=1)
+	rospy.Subscriber("/overtake_on_right/decision", Decision, callback_overtake_on_right, queue_size=1)
 	rospy.Subscriber("/temporary_stop_by_roadside/decision", Decision, callback_temporary_stop_by_roadside, queue_size=1)
 
 	# publishers
@@ -144,8 +139,8 @@ def listener():
 	surrounding = SurroundingBuild()
 
 	# decision for lane keep
-	global lane_keep_decision
-	lane_keep_decision = Decision()
+	global wide_speed_range_adaptive_cruise_decision
+	wide_speed_range_adaptive_cruise_decision = Decision()
 
 	# decision for lane change to left
 	global lane_change_to_left_decision
@@ -175,33 +170,29 @@ def listener():
 	global stop_at_obstacle_decision
 	stop_at_obstacle_decision = Decision()
 
-	# decision for stopping at red light
-	global stop_at_red_light_decision
-	stop_at_red_light_decision = Decision()
+	# decision for halting before stop line
+	global halt_behind_stop_line_decision
+	halt_behind_stop_line_decision = Decision()
 
-	# decision for bypassing obstacle from left
-	global bypass_obstacle_from_left_decision
-	bypass_obstacle_from_left_decision = Decision()
+	# decision for slowdown for pedestrian traverse
+	global slow_down_for_pedestrian_traverse_decision
+	slow_down_for_pedestrian_traverse_decision = Decision()
 
-	# decision for bypassing obstacle from right
-	global bypass_obstacle_from_right_decision
-	bypass_obstacle_from_right_decision = Decision()
+	# decision for bypassing obstacle on left
+	global bypass_obstacle_on_left_decision
+	bypass_obstacle_on_left_decision = Decision()
 
-	# decision for overtaking from left
-	global overtake_from_left_decision
-	overtake_from_left_decision = Decision()
+	# decision for bypassing obstacle on right
+	global bypass_obstacle_on_right_decision
+	bypass_obstacle_on_right_decision = Decision()
+
+	# decision for overtaking on left
+	global overtake_on_left_decision
+	overtake_on_left_decision = Decision()
 
 	# decision for overtaking from right
-	global overtake_from_right_decision
-	overtake_from_right_decision = Decision()
-
-	# decision for car following in city
-	global car_follow_in_city_decision
-	car_follow_in_city_decision = Decision()
-
-	# decision for cruise at high speed
-	global cruise_at_high_speed_decision
-	cruise_at_high_speed_decision = Decision()
+	global overtake_on_right_decision
+	overtake_on_right_decision = Decision()
 
 	# decision for temporary stop by the roadside
 	global temporary_stop_by_roadside_decision

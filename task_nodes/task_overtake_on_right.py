@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import LaneKeepBasis
+from multi_task_msgs import OvertakeOnRightBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_lane_keep", anonymous=True)
+	rospy.init_node("task_overtake_on_right", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_lane_keep_basis = rospy.Publisher("/multi_task/lane_keep", LaneKeepBasis, queue_size=1)
-	pub_lane_keep_decision = rospy.Publisher("/lane_keep/decision", Decision, queue_size=1)
+	pub_overtake_on_right_basis = rospy.Publisher("/multi_task/overtake_on_right", OvertakeOnRightBasis, queue_size=1)
+	pub_overtake_on_right_decision = rospy.Publisher("/overtake_on_right/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

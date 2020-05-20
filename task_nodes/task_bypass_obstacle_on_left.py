@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import OvertakeFromRightBasis
+from multi_task_msgs import BypassObstacleOnLeftBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_overtake_from_right", anonymous=True)
+	rospy.init_node("task_bypass_obstacle_on_left", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_overtake_from_right_basis = rospy.Publisher("/multi_task/overtake_from_right", OvertakeFromRightBasis, queue_size=1)
-	pub_overtake_from_right_decision = rospy.Publisher("/overtake_from_right/decision", Decision, queue_size=1)
+	pub_bypass_obstacle_on_left_basis = rospy.Publisher("/multi_task/bypass_obstacle_on_left", BypassObstacleOnLeftBasis, queue_size=1)
+	pub_bypass_obstacle_on_left_decision = rospy.Publisher("/bypass_obstacle_on_left/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

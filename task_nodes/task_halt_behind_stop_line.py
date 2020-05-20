@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import CarFollowInCityBasis
+from multi_task_msgs import HaltBehindStopLineBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_car_follow_in_city", anonymous=True)
+	rospy.init_node("task_halt_behind_stop_line", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_car_follow_in_city_basis = rospy.Publisher("/multi_task/car_follow_in_city", CarFollowInCityBasis, queue_size=1)
-	pub_car_follow_in_city_decision = rospy.Publisher("/car_follow_in_city/decision", Decision, queue_size=1)
+	pub_halt_behind_stop_line_basis = rospy.Publisher("/multi_task/halt_behind_stop_line", HaltBehindStopLineBasis, queue_size=1)
+	pub_halt_behind_stop_line_decision = rospy.Publisher("/halt_behind_stop_line/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 

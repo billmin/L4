@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import BypassObstacleFromRightBasis
+from multi_task_msgs import SlowDownForPedestrianTraverseBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_bypass_obstacle_from_right", anonymous=True)
+	rospy.init_node("task_slow_down_for_pedestrian_traverse", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_bypass_obstacle_from_right_basis = rospy.Publisher("/multi_task/bypass_obstacle_from_right", BypassObstacleFromRightBasis, queue_size=1)
-	pub_bypass_obstacle_from_right_decision = rospy.Publisher("/bypass_obstacle_from_right/decision", Decision, queue_size=1)
+	pub_slow_down_for_pedestrian_traverse_basis = rospy.Publisher("/multi_task/slow_down_for_pedestrian_traverse", SlowDownForPedestrianTraverseBasis, queue_size=1)
+	pub_slow_down_for_pedestrian_traverse_decision = rospy.Publisher("/slow_down_for_pedestrian_traverse/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 
