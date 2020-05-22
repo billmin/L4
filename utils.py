@@ -50,5 +50,3 @@ def is_determined_to_bear_risk(driving_style=DrvStyle.NORMAL.value, is_urgent=Fa
 	else:
 		return True
 
-
-
