@@ -1,0 +1,75 @@
+############################################################
+# complementary for multiple tasks (aka states in our FSM)
+# type of cases:
+# 	A) navigation related cases.
+# 	B) driving style related cases.
+	C) traffic infrastructure related cases.
+# 	D) temporary roadwork, emergency, safety related cases.
+############################################################
+# type A:
+	1) follow_traffic_stream.
+	2) flow_into_traffic_stream_on_left.
+	3) flow_into_traffic_stream_on_right.
+	4) flow_out_of_traffic_stream_on_left.
+	5) flow_out_of_traffic_stream_on_right.
+where 1)-5) shall be translated into basic driving skills.
+Notice: type-A FSM is a base FSM. From any of the states, we can make transition to FSM states of type-B, type-C or type-D
+
+
+# type B:
+	1) car_following_with_patience (if front vehicle is slow, you can bear this)
+	2) overtake_on_left (if front vehicle is slow, you can't bear that and overtake it on left side; Also if failed, it must abort, ie, return to initial lane)
+	3) overtake_on_right (if front vehicle is slow, you can't bear that and overtake it on right side; Also if failed, it must abort, ie, return to initial lane)
+where 1)-3) shall be translated into basic driving skills
+
+
+# type C:
+	1) traffic_light_is_red
+	2) traffic_light_is_green
+	3) traffic_light_is_yellow_or_blackout
+	4) speed_limit_sign
+where 1)-3) shall be translated into basic driving skills
+
+
+# type D:
+	1) slow_to_avoid_collision_with_obstacle (obstacle may be pedestrian!)
+	2) turn_left_to_bypass_obstacle (including but not limited to lane-change-to-left; Also if failed, it must abort, ie, slow down immediately)
+	3) turn_right_to_bypass_obstacle (including but not limited to lane-change-to-right; Also if failed, it must abort, ie, slow down immediately)
+where 1)-3) shall be translated into basic driving skills
+
+
+# 最小驾驶模型's basic driving skills (considering implementing the following skills in a class):
+	1) lane_keep (stay in lane center, which may need be estimated when lane line is unclear)
+	2) wide_speed_range_cruise (including distance keeping with front vehicle, obstacle, stop line etc if existing & speed keeping under speed limitation, keeping low speed whenever needed)
+	3) go_left (full function with safety checking, including but not limited to lane-change-to-left, eg. turn left regardless of lane)
+	4) go_right (full function with safety checking, including but not limited to lane-change-to-right, eg. turn right regardless of lane)
+
+
+######################
+# navigation command
+######################
+
+GO_STRAIGHT: 				前方直行
+TURN_LEFT: 					前方路口左转
+TURN_RIGHT: 				前方路口右转
+TURN_SLIGHT_LEFT: 			前方稍左转
+TURN_SLIGHT_RIGHT: 			前方稍右转
+TURN_SHARP_LEFT: 			前方向左后方转
+TURN_SHARP_RIGHT: 			前方向右后方转
+U_TURN: 					掉头
+DEPART: 					导航开始
+ARRIVED: 					到达目的地
+MERGE_ON_LEFT: 				向左汇入车流
+MERGE_ON_RIGHT: 			向右汇入车流
+ON_RAMP: 					驶入匝道进高速
+OFF_RAMP:					驶入匝道出高速
+FORK_LEFT: 					前方岔路口左行
+FORK_RIGHT: 				前方岔路口右行
+END_OF_ROAD_LEFT: 			左侧为断头路
+END_OF_ROAD_RIGHT: 			右侧为断头路
+END_OF_ROAD_FRONT: 			前方为断头路
+CONTINUE:					沿当前道路顺行
+ENTER_ROUNDABOUT_ON_LEFT:	从左侧驶入环岛
+ENTER_ROUNDABOUT_ON_RIGHT:	从右侧驶入环岛
+EXIT_ROUNDABOUT:			驶出环岛
+
