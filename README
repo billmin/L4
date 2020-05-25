@@ -1,19 +1,37 @@
 ############################################################
 # complementary for multiple tasks (aka states in our FSM)
 # type of cases:
-# 	A) navigation related cases.
-# 	B) driving style related cases.
+ 	A) navigation related cases.
+ 	B) driving style related cases.
 	C) traffic infrastructure related cases.
-# 	D) temporary roadwork, emergency, safety related cases.
+ 	D) temporary roadwork, emergency, safety related cases.
 ############################################################
 # type A:
-	1) follow_traffic_stream.
-	2) flow_into_traffic_stream_on_left.
-	3) flow_into_traffic_stream_on_right.
-	4) flow_out_of_traffic_stream_on_left.
-	5) flow_out_of_traffic_stream_on_right.
-where 1)-5) shall be translated into basic driving skills.
-Notice: type-A FSM is a base FSM. From any of the states, we can make transition to FSM states of type-B, type-C or type-D
+	1) set_off.
+	2) arrived_at_dest.
+	3) go_straight_along_road.
+	4) turn_left_at_crossing.
+	5) turn_right_at_crossing.
+	6) turn_slight_left_ahead.
+	7) turn_slight_right_ahead.
+	8) turn_sharp_left_ahead.
+	9) turn_sharp_right_ahead.
+	10) u_turn.
+	11) merge_into_main_stream_on_left.
+	12) merge_into_main_stream_on_right.
+	13) on_ramp_into_highway.
+	14) off_ramp_out_of_highway.
+	15) go_left_at_fork_ahead.
+	16) go_right_at_fork_ahead.
+	17) road_end_on_left.
+	18) road_end_on_right.
+	19) road_end_ahead.
+	20) continue_with_current_road.
+	21) enter_roundabout_on_left.
+	22) enter_roundabout_on_right.
+	23) exit_roundabout.
+where 1)-23) shall be translated into basic driving skills.
+Notice: type-A FSM is a base FSM, which guide the vehicle where to go and have globally high priority.
 
 
 # type B:
@@ -39,10 +57,9 @@ where 1)-3) shall be translated into basic driving skills
 
 
 # 最小驾驶模型's basic driving skills (considering implementing the following skills in a class):
-	1) lane_keep (stay in lane center, which may need be estimated when lane line is unclear)
-	2) wide_speed_range_cruise (including distance keeping with front vehicle, obstacle, stop line etc if existing & speed keeping under speed limitation, keeping low speed whenever needed)
-	3) go_left (full function with safety checking, including but not limited to lane-change-to-left, eg. turn left regardless of lane)
-	4) go_right (full function with safety checking, including but not limited to lane-change-to-right, eg. turn right regardless of lane)
+	1) general_adaptive_cruise (stay in lane center, which may need be estimated when lane line is unclear, including distance keeping with front vehicle, obstacle, stop line etc if existing & speed keeping under speed limitation, keeping low speed whenever needed)
+	2) maneuver_to_left_side (full function with safety checking, including but not limited to lane-change-to-left, eg. turn left regardless of lane)
+	3) maneuver_to_right_side (full function with safety checking, including but not limited to lane-change-to-right, eg. turn right regardless of lane)
 
 
 ######################

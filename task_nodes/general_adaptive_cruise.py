@@ -9,21 +9,21 @@ import copy
 import os
 
 # recieved messages
-from multi_task_msgs import TurnLeftAtCrossBasis
+from multi_task_msgs import GeneralAdaptiveCruiseDecisionBasis
 from decision_basis_msgs import Decision
 
 def callback_todo(data_todo):
 	pass
 
 def listener():
-	rospy.init_node("task_turn_left_at_cross", anonymous=True)
+	rospy.init_node("task_u_turn", anonymous=True)
 	# subscribers
 
 	rospy.Subscriber("", type_todo, callback_todo, queue_size=1)
 
 	# publishers
-	pub_turn_left_at_cross_basis = rospy.Publisher("/multi_task/turn_left_at_cross", TurnLeftAtCrossBasis, queue_size=1)
-	pub_turn_left_at_cross_decision = rospy.Publisher("/turn_left_at_cross/decision", Decision, queue_size=1)
+	pub_u_turn_basis = rospy.Publisher("/multi_task/u_turn", UTurnBasis, queue_size=1)
+	pub_u_turn_decision = rospy.Publisher("/u_turn/decision", Decision, queue_size=1)
 
 	rate = rospy.Rate(50)
 
