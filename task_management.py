@@ -21,7 +21,8 @@ navi_states = {0:  'PullOver',
 			   14: 'GoRightAtForkAhead',
 			   15: 'EnterRoundaboutOnLeft',
 			   16: 'EnterRoundaboutOnRight',
-			   17: 'ExitRoundabout'}
+			   17: 'ExitRoundabout',
+			   18: 'GoAlongRoad'}
 
 # navigation related warnings
 navi_warnings = {0: 'end_of_road_left',
@@ -81,22 +82,84 @@ transitions = [
 	# current state: turn left at crossing [2]
 	{'trigger': navi_commands[2], 'source': navi_states[2], 'dest': navi_states[1]},
 	{'trigger': navi_commands[3], 'source': navi_states[2], 'dest': navi_states[2]},
-	{'trigger': navi_commands[16], 'source': navi_states[2], 'dest': navi_states[2]},
+	{'trigger': navi_commands[16], 'source': navi_states[2], 'dest': navi_states[18]},
 	# current state: turn right at crossing [3]
+	{'trigger': navi_commands[2], 'source': navi_states[3], 'dest': navi_states[1]},
+	{'trigger': navi_commands[4], 'source': navi_states[3], 'dest': navi_states[3]},
+	{'trigger': navi_commands[16], 'source': navi_states[3], 'dest': navi_states[18]},
 	# current state: turn slight left ahead [4]
+	{'trigger': navi_commands[2], 'source': navi_states[4], 'dest': navi_states[1]},
+	{'trigger': navi_commands[5], 'source': navi_states[4], 'dest': navi_states[4]},
+	{'trigger': navi_commands[16], 'source': navi_states[4], 'dest': navi_states[18]},
 	# current state: turn slight right ahead [5]
+	{'trigger': navi_commands[2], 'source': navi_states[5], 'dest': navi_states[1]},
+	{'trigger': navi_commands[6], 'source': navi_states[5], 'dest': navi_states[5]},
+	{'trigger': navi_commands[16], 'source': navi_states[5], 'dest': navi_states[18]},
 	# current state: turn sharp left ahead [6]
+	{'trigger': navi_commands[2], 'source': navi_states[6], 'dest': navi_states[1]},
+	{'trigger': navi_commands[7], 'source': navi_states[6], 'dest': navi_states[6]},
+	{'trigger': navi_commands[16], 'source': navi_states[6], 'dest': navi_states[18]},
 	# current state: turn sharp right ahead [7]
+	{'trigger': navi_commands[2], 'source': navi_states[7], 'dest': navi_states[1]},
+	{'trigger': navi_commands[8], 'source': navi_states[7], 'dest': navi_states[7]},
+	{'trigger': navi_commands[16], 'source': navi_states[7], 'dest': navi_states[18]},
 	# current state: u turn	[8]
+	{'trigger': navi_commands[2], 'source': navi_states[8], 'dest': navi_states[1]},
+	{'trigger': navi_commands[9], 'source': navi_states[8], 'dest': navi_states[8]},
+	{'trigger': navi_commands[16], 'source': navi_states[8], 'dest': navi_states[18]},
 	# current state: merge into main stream on left [9]
+	{'trigger': navi_commands[2], 'source': navi_states[9], 'dest': navi_states[1]},
+	{'trigger': navi_commands[10], 'source': navi_states[9], 'dest': navi_states[9]},
+	{'trigger': navi_commands[16], 'source': navi_states[9], 'dest': navi_states[18]},
 	# current state: merge into main stream on right [10]
+	{'trigger': navi_commands[2], 'source': navi_states[10], 'dest': navi_states[1]},
+	{'trigger': navi_commands[11], 'source': navi_states[10], 'dest': navi_states[10]},
+	{'trigger': navi_commands[16], 'source': navi_states[10], 'dest': navi_states[18]},
 	# current state: on ramp into highway [11]
+	{'trigger': navi_commands[2], 'source': navi_states[11], 'dest': navi_states[1]},
+	{'trigger': navi_commands[12], 'source': navi_states[11], 'dest': navi_states[11]},
+	{'trigger': navi_commands[16], 'source': navi_states[11], 'dest': navi_states[18]},
 	# current state: off ramp out of highway [12]
+	{'trigger': navi_commands[2], 'source': navi_states[12], 'dest': navi_states[1]},
+	{'trigger': navi_commands[13], 'source': navi_states[12], 'dest': navi_states[12]},
+	{'trigger': navi_commands[16], 'source': navi_states[12], 'dest': navi_states[18]},
 	# current state: go left at fork ahead [13]
+	{'trigger': navi_commands[2], 'source': navi_states[13], 'dest': navi_states[1]},
+	{'trigger': navi_commands[14], 'source': navi_states[13], 'dest': navi_states[13]},
+	{'trigger': navi_commands[16], 'source': navi_states[13], 'dest': navi_states[18]},
 	# current state: go right at fork ahead [14]
-	# current state: continue with current road [15]
-	# current state: enter roundabout on left [16]
-	# current state: enter roundabout on right [17]
-	# current state: exit roundabout [18]
-	]
+	{'trigger': navi_commands[2], 'source': navi_states[14], 'dest': navi_states[1]},
+	{'trigger': navi_commands[15], 'source': navi_states[14], 'dest': navi_states[14]},
+	{'trigger': navi_commands[16], 'source': navi_states[14], 'dest': navi_states[18]},
+	# current state: enter roundabout on left [15]
+	{'trigger': navi_commands[16], 'source': navi_states[15], 'dest': navi_states[18]},
+	{'trigger': navi_commands[17], 'source': navi_states[15], 'dest': navi_states[15]},
+	{'trigger': navi_commands[19], 'source': navi_states[15], 'dest': navi_states[17]},
+	# current state: enter roundabout on right [16]
+	{'trigger': navi_commands[16], 'source': navi_states[16], 'dest': navi_states[18]},
+	{'trigger': navi_commands[18], 'source': navi_states[16], 'dest': navi_states[16]},
+	{'trigger': navi_commands[19], 'source': navi_states[16], 'dest': navi_states[17]},
+	# current state: exit roundabout [17]
+	{'trigger': navi_commands[2], 'source': navi_states[17], 'dest': navi_states[1]},
+	{'trigger': navi_commands[16], 'source': navi_states[17], 'dest': navi_states[18]},
+	# current state: go along road [18]
+	{'trigger': mission_completed[0], 'source': navi_states[18], 'dest': navi_states[0]},
+	{'trigger': navi_commands[2], 'source': navi_states[18], 'dest': navi_states[1]},
+	{'trigger': navi_commands[3], 'source': navi_states[18], 'dest': navi_states[2]},
+	{'trigger': navi_commands[4], 'source': navi_states[18], 'dest': navi_states[3]},
+	{'trigger': navi_commands[5], 'source': navi_states[18], 'dest': navi_states[4]},
+	{'trigger': navi_commands[6], 'source': navi_states[18], 'dest': navi_states[5]},
+	{'trigger': navi_commands[7], 'source': navi_states[18], 'dest': navi_states[6]},
+	{'trigger': navi_commands[8], 'source': navi_states[18], 'dest': navi_states[7]},
+	{'trigger': navi_commands[9], 'source': navi_states[18], 'dest': navi_states[8]},
+	{'trigger': navi_commands[10], 'source': navi_states[18], 'dest': navi_states[9]},
+	{'trigger': navi_commands[11], 'source': navi_states[18], 'dest': navi_states[10]},
+	{'trigger': navi_commands[12], 'source': navi_states[18], 'dest': navi_states[11]},
+	{'trigger': navi_commands[13], 'source': navi_states[18], 'dest': navi_states[12]},
+	{'trigger': navi_commands[14], 'source': navi_states[18], 'dest': navi_states[13]},
+	{'trigger': navi_commands[15], 'source': navi_states[18], 'dest': navi_states[14]},
+	{'trigger': navi_commands[17], 'source': navi_states[18], 'dest': navi_states[15]},
+	{'trigger': navi_commands[18], 'source': navi_states[18], 'dest': navi_states[16]},
+	{'trigger': navi_commands[19], 'source': navi_states[18], 'dest': navi_states[17]},
+	{'trigger': navi_commands[16], 'source': navi_states[18], 'dest': navi_states[18]}]
 	
