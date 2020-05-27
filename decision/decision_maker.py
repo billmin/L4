@@ -7,14 +7,13 @@ import rospy
 import time
 import copy
 import os
+from global_vars import *
 
 # recieved messages
 from navigation_msg import NavigationInfo
 from gridmap_msg import GridMap
 from decision_msg import Decision
 
-# published messages
-from control_msgs import XControlStrategy, YControlStrategy
 
 def callback_navigation(data_navi_info):
 	global navi_info
@@ -43,6 +42,9 @@ def listener():
 	# grid map
 	global grid_map
 	grid_map = GridMap()
+
+	# id of active task deployed
+	active_task = BasicTask.GENERAL_ADAPTIVE_CRUISE.value
 
 	while not rospy.is_shutdown():
 
