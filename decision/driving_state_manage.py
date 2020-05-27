@@ -1,8 +1,6 @@
 from transitions import Machine
 
-class Navigation:
-	pass
-		
+
 # navigation related states
 navi_states = {0:  'PullOver',
 			   1:  'GoStraightAlongRoad',
@@ -56,7 +54,7 @@ navi_commands = {0:  'depart',
 mission_completed = ['pull_over']
 
 # transition of maneuver-related tasks in a redundant way
-transitions = [
+navi_state_transitions = [
 	# current state: pull over [0]
 	{'trigger': navi_commands[0], 'source': navi_states[0], 'dest': navi_states[1]},
 	# current state: go straight along road [1]
@@ -163,3 +161,36 @@ transitions = [
 	{'trigger': navi_commands[19], 'source': navi_states[18], 'dest': navi_states[17]},
 	{'trigger': navi_commands[16], 'source': navi_states[18], 'dest': navi_states[18]}]
 	
+
+
+# =============>>>>>>>>>>
+# maneuver state
+maneuver_states = {0: 'LaneKeep',
+				   1: 'OvertakeOnLeft',
+				   2: 'OvertakeOnRight',
+				   3: 'BypassObstacleOnLeft',
+				   4: 'BypassObstacleOnRight'}
+
+# safety evaluation for maneuver states transition
+safety_evaluation = {0: 'march_on_ahead',
+					 1: 'slow_vehicle_ahead_with_cleaner_left_side',
+					 2: 'slow_vehicle_ahead_with_cleaner_right_side',
+					 3: 'obstacle_ahead_with_cleaner_left_side',
+					 4: 'obstacle_ahead_with_cleaner_right_side'}
+
+# transitions
+maneuver_state_transition = [
+							# current state: lane keep [0]
+							{'trigger': safety_evaluation[0], 'source': maneuver_states[0], 'dest': maneuver_states[0]},
+							{'trigger': safety_evaluation[1], 'source': maneuver_states[0], 'dest': maneuver_states[1]},
+							{'trigger': safety_evaluation[2], 'source': maneuver_states[0], 'dest': maneuver_states[2]},
+							{'trigger': safety_evaluation[3], 'source': maneuver_states[0], 'dest': maneuver_states[3]},
+							{'trigger': safety_evaluation[4], 'source': maneuver_states[0], 'dest': maneuver_states[4]},
+							# current state: overtake on left [1]
+							{'trigger': safety_evaluation[0], 'source': maneuver_states[1], 'dest': maneuver_states[0]},
+							# current state: overtake on right [2]
+							{'trigger': safety_evaluation[0], 'source': maneuver_states[2], 'dest': maneuver_states[0]},
+							# current state: bypass obstacle on left [3]
+							{'trigger': safety_evaluation[0], 'source': maneuver_states[3], 'dest': maneuver_states[0]},
+							# current state: bypass obstacle on right [4]
+							{'trigger': safety_evaluation[0], 'source': maneuver_states[4], 'dest': maneuver_states[0]}]
