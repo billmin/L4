@@ -1,5 +1,8 @@
-from transitions import Machine
-
+######################################################
+# navigation state machine and maneuver stste machine
+######################################################
+class Navigation:
+	pass
 
 # navigation related states
 navi_states = {0:  'PullOver',
@@ -162,8 +165,10 @@ navi_state_transitions = [
 	{'trigger': navi_commands[16], 'source': navi_states[18], 'dest': navi_states[18]}]
 	
 
+# ========================>>>>>>>>>>>>>>>>>>>>>>>>>
+class Maneuver:
+	pass
 
-# =============>>>>>>>>>>
 # maneuver state
 maneuver_states = {0: 'LaneKeep',
 				   1: 'OvertakeOnLeft',

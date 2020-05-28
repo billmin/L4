@@ -9,22 +9,27 @@ import copy
 import os
 
 # recieved messages
-from basic_task_msgs import ManeuverToLeftSideDecisionBasis 
-from decision_msgs import Decision
 from gridmap_msg import GridMap
 
 def callback_todo(data_todo):
 	pass
 
+def callback_active_task(active_task_id):
+	global task_id
+	task_id = active_task_id.data
+
 def listener():
 	rospy.init_node("maneuver_to_left_side", anonymous=True)
-	# subscribers
 
+	# subscribers
 	rospy.Subscriber("/grid_map", GridMap, callback_todo, queue_size=1)
+	rospy.Subscriber("/active_task_id", Int8, callback_active_task, queue_size=1)
 
 	# publishers
-	pub_maneuver_to_left_side_decision_basis = rospy.Publisher("/maneuver_to_left_side/decision_basis", ManeuverToLeftSideDecisionBasis, queue_size=1)
-	pub_maneuver_to_left_side_decision = rospy.Publisher("/maneuver_to_left_side/decision", Decision, queue_size=1)
+	pub_steering = rospy.Publisher("/control/steering_angle", Float32, queue_size=1)
+    pub_steering_speed_limit = rospy.Publisher("/control/steer_speed_limit", Float32, queue_size=1)
+	pub_torque = rospy.Publisher("/torque", Float32, queue_size=1)
+	pub_brake = rospy.Publisher("/brake", Float32, queue_size=1)
 
 	rate = rospy.Rate(50)
 

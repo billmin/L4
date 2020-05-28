@@ -8,6 +8,7 @@ import time
 import copy
 import os
 from global_vars import *
+from transitions import Machine
 
 # recieved messages
 from navigation_msg import NavigationInfo
@@ -31,10 +32,9 @@ def listener():
 	rospy.Subscriber("/grid_map", GridMap, callback_grid_map, queue_size=1)
 
 	# publishers
-	pub_steering_strategy = rospy.Publisher("/steering_strategy", XControlStrategy, queue_size=1)
-	pub_longitudinal_strategy = rospy.Publisher("/longitudinal_strategy", YControlStrategy, queue_size=1)
+	pub_active_task_id = rospy.Publisher("/active_task_id", Int8, queue_size=1)
 
-	rate = rospy.Rate(10)
+	rate = rospy.Rate(50)
 
 	# navigation info
 	global navi_info
@@ -43,11 +43,21 @@ def listener():
 	global grid_map
 	grid_map = GridMap()
 
+	# navigation related
+	int navi_command, navi_warning
 	# id of active task deployed
 	active_task = BasicTask.GENERAL_ADAPTIVE_CRUISE.value
 
-	while not rospy.is_shutdown():
+	# navigation
+	navigator = Machine(model=Navigation(), states=navi_states, transitions=navi_state_transitions, initial=navi_states[0])
+	# maneuver
+	maneuver = Machine(model=Maneuver(), states=maneuver_states, transitions=maneuver_state_transition, initial=maneuver_states[0])
 
+	while not rospy.is_shutdown():
+		# get navigation command
+		navi_command = navi_info.navi_command
+		navi_warning = navi_info.navi_warning
+		
 		rate.sleep()
 
 	rospy.spin()
