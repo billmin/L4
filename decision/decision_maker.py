@@ -44,20 +44,25 @@ def listener():
 	grid_map = GridMap()
 
 	# navigation related
-	int navi_command, navi_warning
+	int navi_command_code, navi_warning_code
 	# id of active task deployed
 	active_task = BasicTask.GENERAL_ADAPTIVE_CRUISE.value
 
 	# navigation
-	navigator = Machine(model=Navigation(), states=navi_states, transitions=navi_state_transitions, initial=navi_states[0])
+	navigator = Navigation()
+	navi_fsm = Machine(model=navigator, states=navi_states, transitions=navi_state_transitions, initial=navi_states[0])
 	# maneuver
-	maneuver = Machine(model=Maneuver(), states=maneuver_states, transitions=maneuver_state_transition, initial=maneuver_states[0])
+	maneuver = Maneuver()
+	maneuver_fsm = Machine(model=maneuver, states=maneuver_states, transitions=maneuver_state_transition, initial=maneuver_states[0])
 
 	while not rospy.is_shutdown():
 		# get navigation command
-		navi_command = navi_info.navi_command
-		navi_warning = navi_info.navi_warning
-		
+		navi_command_code = navi_info.navi_command
+		navi_warning_code = navi_info.navi_warning
+		# state transition according to navi command
+		getattr(navigator, navi_commands[navi_command_code])()
+				
+
 		rate.sleep()
 
 	rospy.spin()
