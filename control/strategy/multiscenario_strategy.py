@@ -2,11 +2,18 @@ import os, sys
 from fuzzy_control_reference import *
 
 
-def lane_center_and_adaptive_cruise_control(lateral_deviation_from_lane_center, 
+def lane_center_and_adaptive_cruise_control(far_end_deviation_from_lane_center,
+											near_end_deviation_from_lane_center,
+											insensitive_interval,
+											step,
 											ego_speed,
-											distance_to_front_vehicle_or_pedestrian_in_ego_lane=None,
-											speed_of_front_vehicle_or_pedestrian_in_ego_lane=None):
-	pass
+											distance_to_front_vehicle_or_pedestrian=None,
+											speed_of_front_vehicle_or_pedestrian=None):
+	
+	# lcc
+	
+	
+	# acc
 
 
 def lane_change_control(lateral_direction_to, 
