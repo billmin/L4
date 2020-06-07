@@ -8,7 +8,6 @@ import time
 import copy
 import os
 from global_vars import *
-from transitions import Machine
 
 # recieved messages
 from navigation_msg import NavigationInfo
@@ -48,20 +47,18 @@ def listener():
 	# id of active task deployed
 	active_task = BasicTask.GENERAL_ADAPTIVE_CRUISE.value
 
-	# navigation
-	navigator = Navigation()
-	navi_fsm = Machine(model=navigator, states=navi_states, transitions=navi_state_transitions, initial=navi_states[0])
-	# maneuver
-	maneuver = Maneuver()
-	maneuver_fsm = Machine(model=maneuver, states=maneuver_states, transitions=maneuver_state_transition, initial=maneuver_states[0])
-
 	while not rospy.is_shutdown():
 		# get navigation command
 		navi_command_code = navi_info.navi_command
 		navi_warning_code = navi_info.navi_warning
-		# state transition according to navi command
-		getattr(navigator, navi_commands[navi_command_code])()
-				
+
+		# ---- navigation level 
+		if navi_command_code == NaviCommands.GO_STRAIGHT.value:
+
+		elif navi_command_code == NaviCommands.TURN_LEFT.value:
+		
+		elif navi_command_code == NaviCommands.TURN_RIGHT.value:
+
 
 		rate.sleep()
 
