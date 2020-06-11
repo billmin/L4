@@ -182,17 +182,17 @@ class FuzzySteer:
 
 	def getSteeringAngleControlStep(self, in_curv_fuzzy):
 		if in_curv_fuzzy == 'CURV_NB+' or in_curv_fuzzy == 'CURV_PB+':
-			step = 10.0
+			control_step = 10.0
 		elif in_curv_fuzzy == 'CURV_NB' or in_curv_fuzzy == 'CURV_PB':
-			step = 10.0
+			control_step = 10.0
 		elif in_curv_fuzzy == 'CURV_NS' or in_curv_fuzzy == 'CURV_PS':
-			step = 5.0
+			control_step = 5.0
 		elif in_curv_fuzzy == 'CURV_NS-' or in_curv_fuzzy == 'CURV_PS-':
-			step = 2.0
+			control_step = 2.0
 		else:
-			step = 1.0
+			control_step = 1.0
 	
-		return step
+		return control_step
 
 
 class FuzzyThrottle:
