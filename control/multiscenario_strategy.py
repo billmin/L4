@@ -3,7 +3,7 @@ import os, sys
 CAR_TYPE = '7sf71' # or '3g9d5'
 
 
-def efficient_coarse_tuning(current_deviation_state, last_deviation_state, control_step):
+def efficient_coarse_tuning(current_deviation_state, last_deviation_state, diff_deviation_state, control_step):
 	'''
 	current_deviation_state:		current deviation state -1: deviation to left, 0: deviation ignorable, +1: deviation to right
 	last_deviation_state: 			deviation state of last moment
@@ -14,10 +14,22 @@ def efficient_coarse_tuning(current_deviation_state, last_deviation_state, contr
 	else:
 		p = current_deviation_state * last_deviation_state
 		pre_delta_control = (-current_deviation_state) * control_step
-		delta_control = 3*pre_delta_control if p > 0 else 1.0 * pre_delta_control	
-			
-	# update last deviation state
-	last_deviation_state = current_deviation_state
+		if p > 0:
+			if diff_deviation_state == 1:
+				delta_control = pre_delta_control
+			elif diff_deviation_state == -1:
+				delta_control = 0.0
+			else:
+				delta_control = 0.5*pre_delta_control
+		elif p == 0:
+			delta_control = 0.0
+		else:
+			if diff_deviation_state == 1:
+				delta_control = 1.5*pre_delta_control
+			elif diff_deviation_state == -1:
+				delta_control = 0.0
+			else:
+				delta_control = pre_delta_control
 
 	return delta_control
 
@@ -44,6 +56,7 @@ def lane_center_and_adaptive_cruise_control(current_steering_angle,
 		last_deviation_state = -1
 	else:
 		last_deviation_state = 1
+
 	# check current deviation state
 	if -insensitiveness <= deviation_from_lane_center <= insensitiveness:
 		current_deviation_state = 0
@@ -52,13 +65,22 @@ def lane_center_and_adaptive_cruise_control(current_steering_angle,
 	else:
 		current_deviation_state = 1
 
+	# diff deviation
+	diff_deviation = abs(deviation_from_lane_center) - abs(last_deviation_from_lane_center)
+	if diff_deviation < 0:
+		diff_deviation_state = -1
+	elif diff_deviation > 0:
+		diff_deviation_state = 1
+	else:
+		diff_deviation_state = 0
+
 	# incremental steering angle
-	delta_steering_angle = efficient_coarse_tuning(current_deviation_state, last_deviation_state, steering_control_step)
+	delta_steering_angle = efficient_coarse_tuning(current_deviation_state, last_deviation_state, diff_deviation_state, steering_control_step)
 	#print(delta_steering_angle)	
 	steering_angle = current_steering_angle + steer_direct_setup_coe * delta_steering_angle
 
 	# acc
-	torque = 150.0
+	torque = 0.0
 	brake = 0.0
 
 	return steering_angle, torque, brake
