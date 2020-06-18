@@ -7,14 +7,16 @@ import rospy
 import time
 import copy
 import os
+from std_msgs.msg import Float32, Float32MultiArray, Int8
 from fuzzy_control_reference import *
+from multiscenario_strategy import *
 
 # deviation insensitiveness
-insensitiveness = 0.1
+insensitiveness = 0.04
 # ros cycle(s)
 r_c = 0.1
 # time to take effect
-TTE = 0.3
+TTE = 0.4
 tte = TTE
 coe_tte = 0.5
 
@@ -27,12 +29,17 @@ def callback_fuzzy_curv_info(curv_type):
 	global fuzzy_curv_type
 	fuzzy_curv_type = curv_type.data
 
-
+'''
 def callback_deviation_from_lane_center(deviation):
 	global deviation_from_lane_center, dist_to_left_lane_line, dist_to_right_lane_line
 	dist_to_left_lane_line, dist_to_right_lane_line = deviation.data[0], deviation.data[1]
 	deviation_from_lane_center = (dist_to_left_lane_line - dist_to_right_lane_line)/2
+'''
 
+def callback_deviation_from_lane_center(deviation):
+	global deviation_from_lane_center
+	deviation_from_lane_center = -deviation.data[0]
+	#print('deviation_from_lane_center={}'.format(deviation_from_lane_center))
 
 def callback_ego_speed(speed):
 	global ego_speed
@@ -55,14 +62,15 @@ def listener():
 
 	rospy.Subscriber("/active_task_code", Int8, callback_active_task, queue_size=1)
 	rospy.Subscriber("/fuzzy_curv_info", Int8, callback_fuzzy_curv_info, queue_size=1)
-	rospy.Subscriber("/deviation_from_lane_center", Float32, callback_deviation_from_lane_center, queue_size=1)
+	#rospy.Subscriber("/deviation_from_lane_center", Float32MultiArray, callback_deviation_from_lane_center, queue_size=1)
+	rospy.Subscriber("/center_line", Float32MultiArray, callback_deviation_from_lane_center, queue_size=1)
 	rospy.Subscriber("/ego_speed", Float32, callback_ego_speed, queue_size=1)
 	rospy.Subscriber("/distance_to_object_on_my_path", Float32, callback_distance_to_object_on_my_path, queue_size=1)
 	rospy.Subscriber("/speed_of_object_on_my_path", Float32, callback_speed_of_object_on_my_path, queue_size=1)
 
 	# publishers
 	pub_steering = rospy.Publisher("/control/steering_angle", Float32, queue_size=1)
-    pub_steering_speed_limit = rospy.Publisher("/control/steer_speed_limit", Float32, queue_size=1)
+	pub_steering_speed_limit = rospy.Publisher("/control/steer_speed_limit", Float32, queue_size=1)
 	pub_torque = rospy.Publisher("/torque", Float32, queue_size=1)
 	pub_brake = rospy.Publisher("/brake", Float32, queue_size=1)
 	
@@ -111,14 +119,19 @@ def listener():
 	while not rospy.is_shutdown():
 		if task_code == 0:
 			# deviation rate
+			if deviation_from_lane_center is None: # debug
+				deviation_from_lane_center = last_deviation_from_lane_center
+			
 			deviation_rate = np.abs((deviation_from_lane_center - last_deviation_from_lane_center) / r_c)
+			'''
 			tte = (coe_tte * dist_to_left_lane_line / deviation_rate) if dist_to_left_lane_line < dist_to_right_lane_line else (coe_tte * dist_to_right_lane_line / deviation_rate)
 			# less than 1 sec, greater than r_c
 			tte = 1.0 if tte >= 1.0 else tte
 			tte = r_c if tte <= r_c else tte
+			'''
 			
 			# defuzzification
-			fuzzy_curv = fs.curv_fuzzy_set(fuzzy_curv_type)
+			fuzzy_curv = fs.curv_fuzzy_set[fuzzy_curv_type]
 			steering_control_step = fs.getSteeringAngleControlStep(fuzzy_curv)
 			# new control
 			if fuzzy_curv_type != last_fuzzy_curv_type:
@@ -135,7 +148,7 @@ def listener():
 																						speed_of_object_on_my_path)
 			else:
 				# after controls deployed for tte seconds, we consider deploying new controls, otherwise use old controls
-				if tte_count % (tte/r_c) == 0:
+				if tte_count % (int(tte/r_c)) == 0:
 					tte_count = 0
 					# lcc & acc
 					steering_angle, torque, brake = lane_center_and_adaptive_cruise_control(steering_angle,
@@ -151,7 +164,7 @@ def listener():
 					pass
 
 			# tte_count count up
-			tte_count++
+			tte_count += 1
 			# update last_fuzzy_curv
 			last_fuzzy_curv_type = fuzzy_curv_type
 			# update last_deviation_from_lane_center
@@ -166,11 +179,13 @@ def listener():
 			pass
 				
 		
+		print('steering_angle: {} --> deviation_from_lane_center={}'.format(steering_angle, deviation_from_lane_center))
 		# publish controls
 		pub_steering.publish(Float32(steering_angle))
 		pub_steering_speed_limit.publish(Float32(steering_speed_limit))
 		pub_torque.publish(Float32(torque))
-		rate.sleep(Float32(brake))
+		pub_brake.publish(Float32(brake))
+		rate.sleep()
 
 	rospy.spin()
 
