@@ -1,6 +1,55 @@
 import os, sys
+import numpy as np
 
-CAR_TYPE = '7sf71' # or '3g9d5'
+CAR_TYPE = '3g9d5' # or '3g9d5'
+
+# turn radius corresponding to four wheels: left front, right front, left rear, right rear
+def turn_radius_left_front_wheel(wheel_base, angle_left_front_wheel):
+	return wheel_base / np.sin(angle_left_front_wheel)
+
+def turn_radius_right_front_wheel(wheel_base, angle_right_front_wheel):
+	return wheel_base / np.sin(angle_right_front_wheel)
+
+def turn_radius_left_rear_wheel(wheel_base, angle_left_rear_wheel):
+	return wheel_base / np.tan(angle_left_rear_wheel)
+
+def turn_radius_right_rear_wheel(wheel_base, angle_right_rear_wheel):
+	return wheel_base / np.tan(angle_right_rear_wheel)
+
+# approximation
+def turn_radius_ceter_vehicle(turn_radius_left_front, turn_radius_right_front):
+	return 0.5 * (turn_radius_left_front + turn_radius_right_front)
+
+def steering_angle_to_wheel_angle(steering_angle):
+	wheel_angle = -0.0607 * steering_angle + 0.0082
+	# limitation
+	if wheel_angle > 34.18176116:
+		wheel_angle = 34.18176116
+	elif wheel_angle < -34.17822892:
+		wheel_angle = -34.17822892
+
+	return wheel_angle
+
+def wheel_angle_to_steering_angle(wheel_angle):
+	steering_angle = -16.407 * wheel_angle + 0.1357
+	# limits
+	if steering_angle > 519.0:
+		steering_angle = 519.0
+	elif steering_angle < -519.0:
+		steering_angle = -519.0
+
+	return steering_angle
+
+def limited_turn_radius(c_speed, limited_lateral_acceleration):
+	min_radius = 3.4 # minimum turn radius
+	limited_radius = c_speed * c_speed / limited_lateral_acceleration
+	if limited_radius < min_radius:
+		limited_radius = min_radius
+
+	return min_radius
+
+def limited_ego_speed(expected_turn_radius, limited_lateral_acceleration):
+	return np.sqrt(expected_turn_radius*limited_lateral_acceleration)
 
 
 def efficient_coarse_tuning(current_deviation_state, last_deviation_state, diff_deviation_state, control_step):
