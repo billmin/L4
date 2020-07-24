@@ -13,15 +13,17 @@ class PoseEstimator:
 					   dist_to_right_rear_bounds,
 					   wheel_base,
 					   width,
-					   c_speed):
+					   dist_from_front_wheel_to_head,
+					   dist_from_rear_wheel_to_tail):
 		'''
-		dist_to_left_front_bounds:  distance to left front bounds (left lane line)
-		dist_to_right_front_bounds: distance to right front bounds (right lane line)
-		dist_to_left_rear_bounds:   distance to left rear bounds (left lane line)
-		dist_to_right_rear_bounds:	distance to right rear bounds (right lane line)
+		dist_to_left_front_bounds:  distance from left front wheel to left front bounds (left lane line)
+		dist_to_right_front_bounds: distance from right front wheel to right front bounds (right lane line)
+		dist_to_left_rear_bounds:   distance from left rear wheel to left rear bounds (left lane line)
+		dist_to_right_rear_bounds:	distance from right rear wheel to right rear bounds (right lane line)
 		wheel_base:					wheel base
 		width: 						width of the vehicle
-		c_speed: 					current speed
+		dist_from_front_wheel_to_head:	distance from front wheel to head
+		dist_from_rear_wheel_to_tail:	distance from rear wheel to tail
 		'''
 		# distance to bounds
 		self._dist_to_left_front_bounds = dist_to_left_front_bounds
@@ -38,8 +40,9 @@ class PoseEstimator:
 		# vehicle data
 		self._wheel_base = wheel_base
 		self._width = width
-		self._c_speed = c_speed
 		self._pose_type = 0
+		self._dist_from_front_wheel_to_head = dist_from_front_wheel_to_head
+		self._dist_from_rear_wheel_to_tail = dist_from_rear_wheel_to_tail
 
 	@property
 	def dev_angle(self):
@@ -52,20 +55,18 @@ class PoseEstimator:
 	def __call__(self, dist_to_left_front_bounds,
 					   dist_to_right_front_bounds,
 					   dist_to_left_rear_bounds,
-					   dist_to_right_rear_bounds,
-					   speed):
+					   dist_to_right_rear_bounds):
 		# update
 		self._dist_to_left_front_bounds = dist_to_left_front_bounds
 		self._dist_to_right_front_bounds = dist_to_right_front_bounds
 		self._dist_to_left_rear_bounds = dist_to_left_rear_bounds
 		self._dist_to_right_rear_bounds = dist_to_right_rear_bounds
-		self._c_speed = speed
 
 	def __convert_to_vehicle_xoy(self):
-		joint_xy_left_front_bounds = (-0.5*width-self._dist_to_left_front_bounds, wheel_base)
-		joint_xy_right_front_bounds = (0.5*width+self._dist_to_right_front_bounds, wheel_base)
-		joint_xy_left_rear_bounds = (-0.5*width-self._dist_to_left_rear_bounds, 0.0)
-		joint_xy_right_rear_bounds = (0.5*width+self._dist_to_right_rear_bounds)
+		joint_xy_left_front_bounds = (-0.5*self._width-self._dist_to_left_front_bounds, self._wheel_base+self._dist_from_front_wheel_to_head)
+		joint_xy_right_front_bounds = (0.5*self._width+self._dist_to_right_front_bounds, self._wheel_base+self._dist_from_front_wheel_to_head)
+		joint_xy_left_rear_bounds = (-0.5*self._width-self._dist_to_left_rear_bounds, 0.0)
+		joint_xy_right_rear_bounds = (0.5*self._width+self._dist_to_right_rear_bounds, 0.0)
 		
 		return [joint_xy_left_front_bounds, joint_xy_right_front_bounds, joint_xy_left_rear_bounds, joint_xy_right_rear_bounds]
 
@@ -103,44 +104,45 @@ class PoseEstimator:
 
 		elif rear_end_x < front_end_x <= 0.0:
 			self._dev_direct = TOWARDS_LEFT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 3
 			
 		elif rear_end_x < 0.0 and front_end_x > 0.0:
 			self._dev_direct = TOWARDS_LEFT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 4
 
 		elif front_end_x > rear_end_x >= 0.0:
 			self._dev_direct = TOWARDS_LEFT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 5
 
 		elif front_end_x < rear_end_x <= 0.0:
 			self._dev_direct = TOWARDS_RIGHT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 6
 			
 		elif front_end_x < 0.0 and rear_end_x > 0.0:
 			self._dev_direct = TOWARDS_RIGHT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 7
 
 		elif rear_end_x > front_end_x >= 0.0:
 			self._dev_direct = TOWARDS_RIGHT
-			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/self._wheel_base)
+			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
 			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
 			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
 			self._pose_type = 8
 			
 		return  self._dev_direct, self._dev_angle, self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis, self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis, self._pose_type
+
