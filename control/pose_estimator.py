@@ -33,10 +33,10 @@ class PoseEstimator:
 		# deviation angle
 		self._dev_angle = 0.0
 		# deviation direct relative to lane heading direction
-		self._dev_direct = NEUTRAL
+		self._dev_direct = self.NEUTRAL
 		# distance from vehicle center axis to lane center axis
-		self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = 0.0
-		self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = 0.0
+		self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = 0.0
+		self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = 0.0
 		# vehicle data
 		self._wheel_base = wheel_base
 		self._width = width
@@ -82,67 +82,67 @@ class PoseEstimator:
 
 		# 9 cases
 		if front_end_x == rear_end_x == 0:
-			self._dev_direct = NEUTRAL
+			self._dev_direct = self.NEUTRAL
 			self._dev_angle = 0.0
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = 0.0
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = 0.0
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = 0.0
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = 0.0
 			self._pose_type = 0
 
 		elif front_end_x == rear_end_x < 0.0:
-			self._dev_direct = NEUTRAL
+			self._dev_direct = self.NEUTRAL
 			self._dev_angle = 0.0
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 1
 
 		elif front_end_x == rear_end_x > 0.0:
-			self._dev_direct = NEUTRAL
+			self._dev_direct = self.NEUTRAL
 			self._dev_angle = 0.0
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 2
 
 		elif rear_end_x < front_end_x <= 0.0:
-			self._dev_direct = TOWARDS_LEFT
+			self._dev_direct = self.TOWARDS_LEFT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 3
 			
 		elif rear_end_x < 0.0 and front_end_x > 0.0:
-			self._dev_direct = TOWARDS_LEFT
+			self._dev_direct = self.TOWARDS_LEFT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 4
 
 		elif front_end_x > rear_end_x >= 0.0:
-			self._dev_direct = TOWARDS_LEFT
+			self._dev_direct = self.TOWARDS_LEFT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 5
 
 		elif front_end_x < rear_end_x <= 0.0:
-			self._dev_direct = TOWARDS_RIGHT
+			self._dev_direct = self.TOWARDS_RIGHT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 6
 			
 		elif front_end_x < 0.0 and rear_end_x > 0.0:
-			self._dev_direct = TOWARDS_RIGHT
+			self._dev_direct = self.TOWARDS_RIGHT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 7
 
 		elif rear_end_x > front_end_x >= 0.0:
-			self._dev_direct = TOWARDS_RIGHT
+			self._dev_direct = self.TOWARDS_RIGHT
 			self._dev_angle = np.arctan(np.abs(front_end_x-rear_end_x)/(self._wheel_base+self._dist_from_front_wheel_to_head))
-			self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis = -front_end_x
-			self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis = -rear_end_x
+			self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center = -front_end_x
+			self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = -rear_end_x
 			self._pose_type = 8
 			
-		return  self._dev_direct, self._dev_angle, self._dist_from_vehicle_center_axis_front_end_to_lane_center_axis, self._dist_from_vehicle_center_axis_rear_end_to_lane_center_axis, self._pose_type
+		return  self._dev_direct, self._dev_angle, self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center, self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center, self._pose_type
 

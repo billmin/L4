@@ -26,18 +26,12 @@ def _quicksort(array):
 def estimate_real_location(current_pixel_x, current_pixel_y, ref_pixel2realcoords, total_closest=10):
 	mark_dist_to_ref_pts = []
 	##
-	t0 = time.time()
 	for k_pix2real, v_pix2real in ref_pixel2realcoords.items():
 		description_dist_to_ref_pt = (current_pixel_x - v_pix2real[0])**2 + (current_pixel_y - v_pix2real[1])**2
 		mark_dist_to_ref_pts.append((description_dist_to_ref_pt, k_pix2real))
-	t1 = time.time()
-	print(t1-t0)
-	t2 = time.time()
 	# sort
 	#_bubble_sort(mark_dist_to_ref_pts)
 	mark_dist_to_ref_pts = _quicksort(mark_dist_to_ref_pts)
-	t3 = time.time()
-	print(t3-t2)
 	# get marked info of closest ref points
 	mark_dist_to_closest_ref_pts = mark_dist_to_ref_pts[0:total_closest]
 	# extract distance info of current pos to closest ref points
