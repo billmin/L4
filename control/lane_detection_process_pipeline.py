@@ -35,9 +35,11 @@ def intercept_solver(x, y1, y2):
 
 
 class LaneDetectionProcessPipeline:
+	# image related
 	CAM_WIDTH = 640
 	CAM_HEIGHT = 360
 	NUGET_SIZE = 0.12
+
 
 	def __init__(self, 
 				 left_front_pix_real_pos_map,
@@ -135,9 +137,17 @@ class LaneDetectionProcessPipeline:
 		self._distance_from_head_to_right_front_ego_lane_line = 0.0
 		self._distance_from_wheel_to_left_rear_ego_lane_line = 0.0
 		self._distance_from_wheel_to_right_rear_ego_lane_line = 0.0
+		# historical distance list
+		self._historical_distances_from_head_to_left_front_ego_lane_line = []
+		self._historical_distances_from_head_to_right_front_ego_lane_line = []
+		self._historical_distances_from_head_to_left_rear_ego_lane_line = []
+		self._historical_distances_from_head_to_right_rear_ego_lane_line = []
 
-		# data completeness type
-		self._data_completeness_type = 
+		# lane detection check
+		self._is_left_front_ego_lane_detected = False
+		self._is_right_front_ego_lane_detected = False
+		self._is_left_rear_ego_lane_detected = False
+		self._is_right_rear_ego_lane_detected = False
 
 
 	@property
@@ -155,6 +165,22 @@ class LaneDetectionProcessPipeline:
 	@property
 	def distance_from_wheel_to_right_rear_ego_lane_line(self):
 		return self._distance_from_wheel_to_right_rear_ego_lane_line
+
+	@property
+	def is_left_front_ego_lane_detected(self):
+		return self._is_left_front_ego_lane_detected
+
+	@property
+	def is_right_front_ego_lane_detected(self):
+		return self._is_right_front_ego_lane_detected
+
+	@property
+	def is_left_rear_ego_lane_detected(self):
+		return self._is_left_rear_ego_lane_detected
+
+	@property
+	def is_right_rear_ego_lane_detected(self):
+		return self._is_right_rear_ego_lane_detected
 
 
 	def __call__(self, 
@@ -194,12 +220,15 @@ class LaneDetectionProcessPipeline:
 			if ego_line_lf != None:
 				self._left_front_ego_lane_line['positionx'] = np.array(ego_line_lf.positionx)
 				self._left_front_ego_lane_line['positiony'] = np.array(ego_line_lf.positiony)
+				self._is_left_front_ego_lane_detected = True
 			else:
 				self._left_front_ego_lane_line['positionx'] = np.array([])
 				self._left_front_ego_lane_line['positiony'] = np.array([])
+				self._is_left_front_ego_lane_detected = False
 		else:
 			self._left_front_ego_lane_line['positionx'] = np.array([])
 			self._left_front_ego_lane_line['positiony'] = np.array([])
+			self._is_left_front_ego_lane_detected = False
 
 		#print("left_front: {}".format(self._left_front_ego_lane_line['positionx']))
 
@@ -215,12 +244,15 @@ class LaneDetectionProcessPipeline:
 			if ego_line_rf != None:
 				self._right_front_ego_lane_line['positionx'] = np.array(ego_line_rf.positionx)
 				self._right_front_ego_lane_line['positiony'] = np.array(ego_line_rf.positiony)
+				self._is_right_front_ego_lane_detected = True
 			else:
 				self._right_front_ego_lane_line['positionx'] = np.array([])
 				self._right_front_ego_lane_line['positiony'] = np.array([])
+				self._is_right_front_ego_lane_detected = False
 		else:
 			self._right_front_ego_lane_line['positionx'] = np.array([])
 			self._right_front_ego_lane_line['positiony'] = np.array([])
+			self._is_right_front_ego_lane_detected = False
 
 		#print("right_front: {}".format(self._right_front_ego_lane_line['positionx']))
 
@@ -235,12 +267,15 @@ class LaneDetectionProcessPipeline:
 			if ego_line_lr != None:
 				self._left_rear_ego_lane_line['positionx'] = np.array(ego_line_lr.positionx)
 				self._left_rear_ego_lane_line['positiony'] = np.array(ego_line_lr.positiony)
+				self._is_left_rear_ego_lane_detected = True
 			else:
 				self._left_rear_ego_lane_line['positionx'] = np.array([])
 				self._left_rear_ego_lane_line['positiony'] = np.array([])
+				self._is_left_rear_ego_lane_detected = False
 		else:
 			self._left_rear_ego_lane_line['positionx'] = np.array([])
 			self._left_rear_ego_lane_line['positiony'] = np.array([])
+			self._is_left_rear_ego_lane_detected = False
 
 		#print("left_rear: {}".format(self._left_rear_ego_lane_line['positionx']))
 			
@@ -256,12 +291,15 @@ class LaneDetectionProcessPipeline:
 			if ego_line_rr != None:
 				self._right_rear_ego_lane_line['positionx'] = np.array(ego_line_rr.positionx)
 				self._right_rear_ego_lane_line['positiony'] = np.array(ego_line_rr.positiony)
+				self._is_right_rear_ego_lane_detected = True
 			else:
 				self._right_rear_ego_lane_line['positionx'] = np.array([])
 				self._right_rear_ego_lane_line['positiony'] = np.array([])
+				self._is_right_rear_ego_lane_detected = False
 		else:
 			self._right_rear_ego_lane_line['positionx'] = np.array([])
 			self._right_rear_ego_lane_line['positiony'] = np.array([])
+			self._is_right_rear_ego_lane_detected = False
 
 		#print("right_rear: {}".format(self._right_rear_ego_lane_line['positionx']))
 				
@@ -278,47 +316,48 @@ class LaneDetectionProcessPipeline:
 
 		# non-zero data points
 		data_len = pos_x_lf.shape[0]
-		## TODO
 
+		if data_len > 0:
+			for i in range(data_len):
+				if pos_x_lf[i]==pos_y_lf[i]==0:
+					del_list.append(i)
+			pos_x_lf = np.delete(pos_x_lf, del_list)
+			pos_y_lf = np.delete(pos_y_lf, del_list)
 
-		for i in range(data_len):
-			if pos_x_lf[i]==pos_y_lf[i]==0:
-				del_list.append(i)
-		pos_x_lf = np.delete(pos_x_lf, del_list)
-		pos_y_lf = np.delete(pos_y_lf, del_list)
+			# check order
+			if pos_x_lf[0] > pos_x_lf[-1]:
+				pos_x_lf = pos_x_lf[::-1]
+				pos_y_lf = pos_y_lf[::-1]
 
-		# check order
-		if pos_x_lf[0] > pos_x_lf[-1]:
-			pos_x_lf = pos_x_lf[::-1]
-			pos_y_lf = pos_y_lf[::-1]
-
-		# x, y1, y2
-		if data_len < min_num_points:
-			# select domain of x, evenly distributed, it takes longer time!
-			x_domain_lf = np.linspace(pos_x_lf[0], pos_x_lf[-1], 10)
-			# calc y values of ref line corresponding to domain of x
-			y_ref_lf = self._left_front_ref_func(x_domain_lf)
-			# fit pos_y_lf
-			pos_y_lf_func = _polyfit_solver(pos_x_lf, pos_y_lf, 2)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_lf = pos_y_lf_func(x_domain_lf)
-			# calc intercept
-			x_cross_lf, _, _ = intercept_solver(x_domain_lf, y_ref_lf, new_pos_y_lf)
-			y_cross_lf = self._left_front_ref_func(x_cross_lf)
-			# update intercept
-			self._left_front_intercept_with_ego_lane_line = np.array([x_cross_lf, y_cross_lf])
+			# x, y1, y2
+			if data_len < min_num_points:
+				# select domain of x, evenly distributed, it takes longer time!
+				x_domain_lf = np.linspace(pos_x_lf[0], pos_x_lf[-1], 10)
+				# calc y values of ref line corresponding to domain of x
+				y_ref_lf = self._left_front_ref_func(x_domain_lf)
+				# fit pos_y_lf
+				pos_y_lf_func = _polyfit_solver(pos_x_lf, pos_y_lf, 2)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_lf = pos_y_lf_func(x_domain_lf)
+				# calc intercept
+				x_cross_lf, _, _ = intercept_solver(x_domain_lf, y_ref_lf, new_pos_y_lf)
+				y_cross_lf = self._left_front_ref_func(x_cross_lf)
+				# update intercept
+				self._left_front_intercept_with_ego_lane_line = np.array([x_cross_lf, y_cross_lf])
+			else:
+				# it is reasonable to take pos_x_lf as evenly distributed
+				x_domain_lf = pos_x_lf
+				# calc y values of ref line corresponding to domain of x
+				y_ref_lf = self._left_front_ref_func(x_domain_lf)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_lf = pos_y_lf
+				# calc intercept
+				x_cross_lf, _, _ = intercept_solver(x_domain_lf, y_ref_lf, new_pos_y_lf)
+				y_cross_lf = self._left_front_ref_func(x_cross_lf) 
+				# update intercept
+				self._left_front_intercept_with_ego_lane_line = np.array([x_cross_lf, y_cross_lf])
 		else:
-			# it is reasonable to take pos_x_lf as evenly distributed
-			x_domain_lf = pos_x_lf
-			# calc y values of ref line corresponding to domain of x
-			y_ref_lf = self._left_front_ref_func(x_domain_lf)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_lf = pos_y_lf
-			# calc intercept
-			x_cross_lf, _, _ = intercept_solver(x_domain_lf, y_ref_lf, new_pos_y_lf)
-			y_cross_lf = self._left_front_ref_func(x_cross_lf) 
-			# update intercept
-			self._left_front_intercept_with_ego_lane_line = np.array([x_cross_lf, y_cross_lf])
+			self._left_front_intercept_with_ego_lane_line = None
 		
 		##############
 		# right front
@@ -330,44 +369,48 @@ class LaneDetectionProcessPipeline:
 
 		# non-zero data points
 		data_len = pos_x_rf.shape[0]
-		for i in range(data_len):
-			if pos_x_rf[i]==pos_y_rf[i]==0:
-				del_list.append(i)
-		pos_x_rf = np.delete(pos_x_rf, del_list)
-		pos_y_rf = np.delete(pos_y_rf, del_list)
+		
+		if data_len > 0:
+			for i in range(data_len):
+				if pos_x_rf[i]==pos_y_rf[i]==0:
+					del_list.append(i)
+			pos_x_rf = np.delete(pos_x_rf, del_list)
+			pos_y_rf = np.delete(pos_y_rf, del_list)
 
-		# check order
-		if pos_x_rf[0] > pos_x_rf[-1]:
-			pos_x_rf = pos_x_rf[::-1]
-			pos_y_rf = pos_y_rf[::-1]
+			# check order
+			if pos_x_rf[0] > pos_x_rf[-1]:
+				pos_x_rf = pos_x_rf[::-1]
+				pos_y_rf = pos_y_rf[::-1]
 
-		# x, y1, y2
-		if data_len < min_num_points:
-			# select domain of x, evenly distributed, it takes longer time!
-			x_domain_rf = np.linspace(pos_x_rf[0], pos_x_rf[-1], 10)
-			# calc y values of ref line corresponding to domain of x
-			y_ref_rf = self._right_front_ref_func(x_domain_rf)
-			# fit pos_y_rf
-			pos_y_rf_func = _polyfit_solver(pos_x_rf, pos_y_rf, 2)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_rf = pos_y_rf_func(x_domain_rf)
-			# calc intercept
-			x_cross_rf, _, _ = intercept_solver(x_domain_rf, y_ref_rf, new_pos_y_rf)
-			y_cross_rf = self._right_front_ref_func(x_cross_rf)
-			# update intercept
-			self._right_front_intercept_with_ego_lane_line = np.array([x_cross_rf, y_cross_rf])
+			# x, y1, y2
+			if data_len < min_num_points:
+				# select domain of x, evenly distributed, it takes longer time!
+				x_domain_rf = np.linspace(pos_x_rf[0], pos_x_rf[-1], 10)
+				# calc y values of ref line corresponding to domain of x
+				y_ref_rf = self._right_front_ref_func(x_domain_rf)
+				# fit pos_y_rf
+				pos_y_rf_func = _polyfit_solver(pos_x_rf, pos_y_rf, 2)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_rf = pos_y_rf_func(x_domain_rf)
+				# calc intercept
+				x_cross_rf, _, _ = intercept_solver(x_domain_rf, y_ref_rf, new_pos_y_rf)
+				y_cross_rf = self._right_front_ref_func(x_cross_rf)
+				# update intercept
+				self._right_front_intercept_with_ego_lane_line = np.array([x_cross_rf, y_cross_rf])
+			else:
+				# it is reasonable to take pos_x_lf as evenly distributed
+				x_domain_rf = pos_x_rf
+				# calc y values of ref line corresponding to domain of x
+				y_ref_rf = self._right_front_ref_func(x_domain_rf)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_rf = pos_y_rf
+				# calc intercept
+				x_cross_rf, _, _ = intercept_solver(x_domain_rf, y_ref_rf, new_pos_y_rf)
+				y_cross_rf = self._right_front_ref_func(x_cross_rf)
+				# update intercept
+				self._right_front_intercept_with_ego_lane_line = np.array([x_cross_rf, y_cross_rf])
 		else:
-			# it is reasonable to take pos_x_lf as evenly distributed
-			x_domain_rf = pos_x_rf
-			# calc y values of ref line corresponding to domain of x
-			y_ref_rf = self._right_front_ref_func(x_domain_rf)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_rf = pos_y_rf
-			# calc intercept
-			x_cross_rf, _, _ = intercept_solver(x_domain_rf, y_ref_rf, new_pos_y_rf)
-			y_cross_rf = self._right_front_ref_func(x_cross_rf)
-			# update intercept
-			self._right_front_intercept_with_ego_lane_line = np.array([x_cross_rf, y_cross_rf])
+			self._right_front_intercept_with_ego_lane_line = None
 		
 		#############
 		# left rear 
@@ -379,44 +422,48 @@ class LaneDetectionProcessPipeline:
 
 		# non-zero data points
 		data_len = pos_x_lr.shape[0]
-		for i in range(data_len):
-			if pos_x_lr[i]==pos_y_lr[i]==0:
-				del_list.append(i)
-		pos_x_lr = np.delete(pos_x_lr, del_list)
-		pos_y_lr = np.delete(pos_y_lr, del_list)
+		
+		if data_len > 0:
+			for i in range(data_len):
+				if pos_x_lr[i]==pos_y_lr[i]==0:
+					del_list.append(i)
+			pos_x_lr = np.delete(pos_x_lr, del_list)
+			pos_y_lr = np.delete(pos_y_lr, del_list)
 
-		# check order
-		if pos_x_lr[0] > pos_x_lr[-1]:
-			pos_x_lr = pos_x_lr[::-1]
-			pos_y_lr = pos_y_lr[::-1]
+			# check order
+			if pos_x_lr[0] > pos_x_lr[-1]:
+				pos_x_lr = pos_x_lr[::-1]
+				pos_y_lr = pos_y_lr[::-1]
 
-		# x, y1, y2
-		if data_len < min_num_points:
-			# select domain of x, evenly distributed, it takes longer time!
-			x_domain_lr = np.linspace(pos_x_lr[0], pos_x_lr[-1], 10)
-			# calc y values of ref line corresponding to domain of x
-			y_ref_lr = self._left_rear_ref_func(x_domain_lr)
-			# fit pos_y_lr
-			pos_y_lr_func = _polyfit_solver(pos_x_lr, pos_y_lr, 2)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_lr = pos_y_lr_func(x_domain_lr)
-			# calc intercept
-			x_cross_lr, _, _ = intercept_solver(x_domain_lr, y_ref_lr, new_pos_y_lr)
-			y_cross_lr = self._left_rear_ref_func(x_cross_lr)
-			# update intercept
-			self._left_rear_intercept_with_ego_lane_line = np.array([x_cross_lr, y_cross_lr])
+			# x, y1, y2
+			if data_len < min_num_points:
+				# select domain of x, evenly distributed, it takes longer time!
+				x_domain_lr = np.linspace(pos_x_lr[0], pos_x_lr[-1], 10)
+				# calc y values of ref line corresponding to domain of x
+				y_ref_lr = self._left_rear_ref_func(x_domain_lr)
+				# fit pos_y_lr
+				pos_y_lr_func = _polyfit_solver(pos_x_lr, pos_y_lr, 2)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_lr = pos_y_lr_func(x_domain_lr)
+				# calc intercept
+				x_cross_lr, _, _ = intercept_solver(x_domain_lr, y_ref_lr, new_pos_y_lr)
+				y_cross_lr = self._left_rear_ref_func(x_cross_lr)
+				# update intercept
+				self._left_rear_intercept_with_ego_lane_line = np.array([x_cross_lr, y_cross_lr])
+			else:
+				# it is reasonable to take pos_x_lf as evenly distributed
+				x_domain_lr = pos_x_lr
+				# calc y values of ref line corresponding to domain of x
+				y_ref_lr = self._left_rear_ref_func(x_domain_lr)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_lr = pos_y_lr
+				# calc intercept
+				x_cross_lr, _, _ = intercept_solver(x_domain_lr, y_ref_lr, new_pos_y_lr)
+				y_cross_lr = self._left_rear_ref_func(x_cross_lr) 
+				# update intercept
+				self._left_rear_intercept_with_ego_lane_line = np.array([x_cross_lr, y_cross_lr])
 		else:
-			# it is reasonable to take pos_x_lf as evenly distributed
-			x_domain_lr = pos_x_lr
-			# calc y values of ref line corresponding to domain of x
-			y_ref_lr = self._left_rear_ref_func(x_domain_lr)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_lr = pos_y_lr
-			# calc intercept
-			x_cross_lr, _, _ = intercept_solver(x_domain_lr, y_ref_lr, new_pos_y_lr)
-			y_cross_lr = self._left_rear_ref_func(x_cross_lr) 
-			# update intercept
-			self._left_rear_intercept_with_ego_lane_line = np.array([x_cross_lr, y_cross_lr])
+			self._left_rear_intercept_with_ego_lane_line = None
 
 		#############
 		# right rear
@@ -428,44 +475,48 @@ class LaneDetectionProcessPipeline:
 
 		# non-zero data points
 		data_len = pos_x_rr.shape[0]
-		for i in range(data_len):
-			if pos_x_rr[i]==pos_y_rr[i]==0:
-				del_list.append(i)
-		pos_x_rr = np.delete(pos_x_rr, del_list)
-		pos_y_rr = np.delete(pos_y_rr, del_list)
 
-		# check order
-		if pos_x_rr[0] > pos_x_rr[-1]:
-			pos_x_rr = pos_x_rr[::-1]
-			pos_y_rr = pos_y_rr[::-1]
+		if data_len > 0:
+			for i in range(data_len):
+				if pos_x_rr[i]==pos_y_rr[i]==0:
+					del_list.append(i)
+			pos_x_rr = np.delete(pos_x_rr, del_list)
+			pos_y_rr = np.delete(pos_y_rr, del_list)
 
-		# x, y1, y2
-		if data_len < min_num_points:
-			# select domain of x, evenly distributed, it takes longer time!
-			x_domain_rr = np.linspace(pos_x_rr[0], pos_x_rr[-1], 10)
-			# calc y values of ref line corresponding to domain of x
-			y_ref_rr = self._right_rear_ref_func(x_domain_rr)
-			# fit pos_y_rr
-			pos_y_rr_func = _polyfit_solver(pos_x_rr, pos_y_rr, 2)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_rr = pos_y_rr_func(x_domain_rr)
-			# calc intercept
-			x_cross_rr, _, _ = intercept_solver(x_domain_rr, y_ref_rr, new_pos_y_rr)
-			y_cross_rr = self._right_rear_ref_func(x_cross_rr)
-			# update intercept
-			self._right_rear_intercept_with_ego_lane_line = np.array([x_cross_rr, y_cross_rr])
+			# check order
+			if pos_x_rr[0] > pos_x_rr[-1]:
+				pos_x_rr = pos_x_rr[::-1]
+				pos_y_rr = pos_y_rr[::-1]
+
+			# x, y1, y2
+			if data_len < min_num_points:
+				# select domain of x, evenly distributed, it takes longer time!
+				x_domain_rr = np.linspace(pos_x_rr[0], pos_x_rr[-1], 10)
+				# calc y values of ref line corresponding to domain of x
+				y_ref_rr = self._right_rear_ref_func(x_domain_rr)
+				# fit pos_y_rr
+				pos_y_rr_func = _polyfit_solver(pos_x_rr, pos_y_rr, 2)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_rr = pos_y_rr_func(x_domain_rr)
+				# calc intercept
+				x_cross_rr, _, _ = intercept_solver(x_domain_rr, y_ref_rr, new_pos_y_rr)
+				y_cross_rr = self._right_rear_ref_func(x_cross_rr)
+				# update intercept
+				self._right_rear_intercept_with_ego_lane_line = np.array([x_cross_rr, y_cross_rr])
+			else:
+				# it is reasonable to take pos_x_lf as evenly distributed
+				x_domain_rr = pos_x_rr
+				# calc y values of ref line corresponding to domain of x
+				y_ref_rr = self._right_rear_ref_func(x_domain_rr)
+				# calc y values of left front ego lane line corresponding to domain of x
+				new_pos_y_rr = pos_y_rr
+				# calc intercept
+				x_cross_rr, _, _ = intercept_solver(x_domain_rr, y_ref_rr, new_pos_y_rr)
+				y_cross_rr = self._right_rear_ref_func(x_cross_rr)
+				# update intercept
+				self._right_rear_intercept_with_ego_lane_line = np.array([x_cross_rr, y_cross_rr])
 		else:
-			# it is reasonable to take pos_x_lf as evenly distributed
-			x_domain_rr = pos_x_rr
-			# calc y values of ref line corresponding to domain of x
-			y_ref_rr = self._right_rear_ref_func(x_domain_rr)
-			# calc y values of left front ego lane line corresponding to domain of x
-			new_pos_y_rr = pos_y_rr
-			# calc intercept
-			x_cross_rr, _, _ = intercept_solver(x_domain_rr, y_ref_rr, new_pos_y_rr)
-			y_cross_rr = self._right_rear_ref_func(x_cross_rr)
-			# update intercept
-			self._right_rear_intercept_with_ego_lane_line = np.array([x_cross_rr, y_cross_rr])
+			self._right_rear_intercept_with_ego_lane_line = None
 
 
 	def update_neighbor_lane_line(self):
@@ -477,25 +528,63 @@ class LaneDetectionProcessPipeline:
 
 	def update_distances_from_wheels_to_ego_lane_lines(self):
 		# left front
-		pix_x, pix_y = self._left_front_intercept_with_ego_lane_line
-		pix_x /= self.CAM_WIDTH
-		pix_y /= self.CAM_HEIGHT
-		self._distance_from_head_to_left_front_ego_lane_line = estimate_real_location(pix_x, pix_y, self._left_front_pix_real_pos_map)[0]*self.NUGET_SIZE
+		if self._left_front_intercept_with_ego_lane_line != None:
+			pix_x, pix_y = self._left_front_intercept_with_ego_lane_line
+			pix_x /= self.CAM_WIDTH
+			pix_y /= self.CAM_HEIGHT
+			self._distance_from_head_to_left_front_ego_lane_line = estimate_real_location(pix_x, pix_y, self._left_front_pix_real_pos_map)[0]*self.NUGET_SIZE
+		else:
+			self._distance_from_head_to_left_front_ego_lane_line = None
 
 		# right front
-		pix_x, pix_y = self._right_front_intercept_with_ego_lane_line
-		pix_x /= self.CAM_WIDTH
-		pix_y /= self.CAM_HEIGHT
-		self._distance_from_head_to_right_front_ego_lane_line = estimate_real_location(pix_x, pix_y, self._right_front_pix_real_pos_map)[0]*self.NUGET_SIZE
+		if self._right_front_intercept_with_ego_lane_line != None:
+			pix_x, pix_y = self._right_front_intercept_with_ego_lane_line
+			pix_x /= self.CAM_WIDTH
+			pix_y /= self.CAM_HEIGHT
+			self._distance_from_head_to_right_front_ego_lane_line = estimate_real_location(pix_x, pix_y, self._right_front_pix_real_pos_map)[0]*self.NUGET_SIZE
+		else:
+			self._distance_from_head_to_right_front_ego_lane_line = None
 
 		# left rear
-		pix_x, pix_y = self._left_rear_intercept_with_ego_lane_line
-		pix_x /= self.CAM_WIDTH
-		pix_y /= self.CAM_HEIGHT
-		self._distance_from_wheel_to_left_rear_ego_lane_line = estimate_real_location(pix_x, pix_y, self._left_rear_pix_real_pos_map)[0]*self.NUGET_SIZE
+		if self._left_rear_intercept_with_ego_lane_line != None:
+			pix_x, pix_y = self._left_rear_intercept_with_ego_lane_line
+			pix_x /= self.CAM_WIDTH
+			pix_y /= self.CAM_HEIGHT
+			self._distance_from_wheel_to_left_rear_ego_lane_line = estimate_real_location(pix_x, pix_y, self._left_rear_pix_real_pos_map)[0]*self.NUGET_SIZE
+		else:
+			self._distance_from_wheel_to_left_rear_ego_lane_line = None
 		
 		# right rear
-		pix_x, pix_y = self._right_rear_intercept_with_ego_lane_line
-		pix_x /= self.CAM_WIDTH
-		pix_y /= self.CAM_HEIGHT
-		self._distance_from_wheel_to_right_rear_ego_lane_line = estimate_real_location(pix_x, pix_y, self._right_rear_pix_real_pos_map)[0]*self.NUGET_SIZE
+		if self._right_rear_intercept_with_ego_lane_line != None:
+			pix_x, pix_y = self._right_rear_intercept_with_ego_lane_line
+			pix_x /= self.CAM_WIDTH
+			pix_y /= self.CAM_HEIGHT
+			self._distance_from_wheel_to_right_rear_ego_lane_line = estimate_real_location(pix_x, pix_y, self._right_rear_pix_real_pos_map)[0]*self.NUGET_SIZE
+		else:
+			self._distance_from_wheel_to_right_rear_ego_lane_line = None
+
+
+	def update_historical_distances_from_wheels_to_ego_lane_line(self, maneuvering_type='lane_keep'):
+		# size of window of historical data
+		window_size = 50 # fix it
+
+		if self._is_left_front_ego_lane_detected and self._is_right_front_ego_lane_detected and self._is_left_rear_ego_lane_detected and self._is_right_rear_ego_lane_detected:
+			if maneuvering_type == 'lane_keep':
+				
+				self._historical_distances_from_head_to_left_front_ego_lane_line.append(self._distance_from_head_to_left_front_ego_lane_line)
+				self._historical_distances_from_head_to_right_front_ego_lane_line.append(self._distance_from_head_to_right_front_ego_lane_line)
+				self._historical_distances_from_head_to_left_rear_ego_lane_line.append(self._distance_from_wheel_to_left_rear_ego_lane_line)
+				self._historical_distances_from_head_to_right_rear_ego_lane_line.append(self._distance_from_wheel_to_right_rear_ego_lane_line)
+			elif maneuvering_type == 'lane_change':
+				self._historical_distances_from_head_to_left_front_ego_lane_line = []
+				self._historical_distances_from_head_to_right_front_ego_lane_line = []
+				self._historical_distances_from_head_to_left_rear_ego_lane_line = []
+				self._historical_distances_from_head_to_right_rear_ego_lane_line = []
+			# length truncated to be sized 50
+			if len(self._historical_distances_from_head_to_left_front_ego_lane_line) > window_size:
+				self._historical_distances_from_head_to_left_front_ego_lane_line.pop(0)
+				self._historical_distances_from_head_to_right_front_ego_lane_line.pop(0)
+				self._historical_distances_from_head_to_left_rear_ego_lane_line.pop(0)
+				self._historical_distances_from_head_to_right_rear_ego_lane_line.pop(0)
+		else:
+			

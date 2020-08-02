@@ -133,6 +133,9 @@ def listener():
 					   width,
 					   dist_from_front_wheel_to_head,
 					   dist_from_rear_wheel_to_tail)
+	
+	# initialize flag
+	initialized = False
 
 	while not rospy.is_shutdown():
 		#num_l = all_detected_lines_lf.line_number
@@ -150,19 +153,28 @@ def listener():
 			 all_detected_lines_rr)
 		
 		ldpp.update_ego_lane_line()
-		'''
-		ldpp.update_intercept_with_ego_lane_line()
-		ldpp.update_distances_from_wheels_to_ego_lane_lines()
-		
-		pe(ldpp.distance_from_head_to_left_front_ego_lane_line,
-		   ldpp.distance_from_head_to_right_front_ego_lane_line,
-		   ldpp.distance_from_wheel_to_left_rear_ego_lane_line,
-		   ldpp.distance_from_wheel_to_right_rear_ego_lane_line)
-		
-		dev_direct, dev_angle, dist_on_x_axis_from_vehicle_front_end_center_to_lane_center, dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center, pose_type = pe.estimate_pose()
 
-		print('dev_angle: {}'.format(dev_angle))
-		'''
+		if not initialized:
+			if ldpp.is_left_front_ego_lane_detected and ldpp.is_right_front_ego_lane_detected and ldpp.is_left_rear_ego_lane_detected and ldpp.is_right_rear_ego_lane_detected:
+				initialized = True
+				print("Initializing...")
+			else:
+				print("Initialized.")
+
+		else:
+			'''
+			ldpp.update_intercept_with_ego_lane_line()
+			ldpp.update_distances_from_wheels_to_ego_lane_lines()
+		
+			pe(ldpp.distance_from_head_to_left_front_ego_lane_line,
+		   	   ldpp.distance_from_head_to_right_front_ego_lane_line,
+		   	   ldpp.distance_from_wheel_to_left_rear_ego_lane_line,
+		   	   ldpp.distance_from_wheel_to_right_rear_ego_lane_line)
+		
+			dev_direct, dev_angle, dist_on_x_axis_from_vehicle_front_end_center_to_lane_center, dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center, pose_type = pe.estimate_pose()
+
+			print('dev_angle: {}'.format(dev_angle))
+			'''
 		rate.sleep()
 
 	rospy.spin()	
