@@ -12,7 +12,7 @@ class PoseEstimator:
 					   dist_to_left_rear_ego_lane_line,
 					   dist_to_right_rear_ego_lane_line,
 					   wheel_base,
-					   width,
+					   vehicle_width,
 					   dist_from_front_wheel_to_head,
 					   dist_from_rear_wheel_to_tail):
 		'''
@@ -21,7 +21,7 @@ class PoseEstimator:
 		dist_to_left_rear_ego_lane_line:   distance from left rear wheel to left rear ego_lane_line (left lane line)
 		dist_to_right_rear_ego_lane_line:	distance from right rear wheel to right rear ego_lane_line (right lane line)
 		wheel_base:					wheel base
-		width: 						width of the vehicle
+		vehicle_width: 						width of the vehicle
 		dist_from_front_wheel_to_head:	distance from front wheel to head
 		dist_from_rear_wheel_to_tail:	distance from rear wheel to tail
 		'''
@@ -44,7 +44,7 @@ class PoseEstimator:
 		self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center = 0.0
 		# vehicle data
 		self._wheel_base = wheel_base
-		self._width = width
+		self._vehicle_width = vehicle_width
 		self._pose_type = 0
 		self._dist_from_front_wheel_to_head = dist_from_front_wheel_to_head
 		self._dist_from_rear_wheel_to_tail = dist_from_rear_wheel_to_tail
@@ -70,10 +70,10 @@ class PoseEstimator:
 		self._dist_to_right_rear_ego_lane_line = dist_to_right_rear_ego_lane_line
 
 	def __convert_to_vehicle_xoy(self):
-		intercept_with_left_front_ego_lane_line = (-0.5*self._width-self._dist_to_left_front_ego_lane_line, self._wheel_base+self._dist_from_front_wheel_to_head)
-		intercept_with_right_front_ego_lane_line = (0.5*self._width+self._dist_to_right_front_ego_lane_line, self._wheel_base+self._dist_from_front_wheel_to_head)
-		intercept_with_left_rear_ego_lane_line = (-0.5*self._width-self._dist_to_left_rear_ego_lane_line, 0.0)
-		intercept_with_right_rear_ego_lane_line = (0.5*self._width+self._dist_to_right_rear_ego_lane_line, 0.0)
+		intercept_with_left_front_ego_lane_line = (-0.5*self._vehicle_width-self._dist_to_left_front_ego_lane_line, self._wheel_base+self._dist_from_front_wheel_to_head)
+		intercept_with_right_front_ego_lane_line = (0.5*self._vehicle_width+self._dist_to_right_front_ego_lane_line, self._wheel_base+self._dist_from_front_wheel_to_head)
+		intercept_with_left_rear_ego_lane_line = (-0.5*self._vehicle_width-self._dist_to_left_rear_ego_lane_line, 0.0)
+		intercept_with_right_rear_ego_lane_line = (0.5*self._vehicle_width+self._dist_to_right_rear_ego_lane_line, 0.0)
 		
 		return intercept_with_left_front_ego_lane_line, intercept_with_right_front_ego_lane_line, intercept_with_left_rear_ego_lane_line, intercept_with_right_rear_ego_lane_line
 
@@ -229,3 +229,10 @@ class PoseEstimator:
 			
 		return  self._dev_direct, self._dev_angle, self._dist_on_x_axis_from_vehicle_front_end_center_to_lane_center, self._dist_on_x_axis_from_vehicle_rear_end_center_to_lane_center, self._pose_type, self._use_last_u
 
+
+	# estimate ego lane width
+	def estimate_ego_lane_width(self):
+		coe_rad_deg = 180.0/np.pi
+		lane_width_measured_front = (self._dist_to_left_front_ego_lane_line+self._dist_to_right_front_ego_lane_line+self._vehicle_width)*np.cos(self._dev_angle/coe_rad_deg)
+		lane_width_measured_rear = (self._dist_to_left_rear_ego_lane_line+self._dist_to_right_rear_ego_lane_line+self._vehicle_width)*np.cos(self._dev_angle/coe_rad_deg)
+		return lane_width_measured_front, lane_width_measured_rear
