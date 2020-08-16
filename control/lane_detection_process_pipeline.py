@@ -52,6 +52,7 @@ class LaneDetectionProcessPipeline:
 				 right_front_lane_line_detection,
 				 left_rear_lane_line_detection,
 				 right_rear_lane_line_detection,
+				 vehicle_velocity,
 				 front_view_check=None,
 				 left_side_view_check=None,
 				 right_side_view_check=None):
@@ -68,6 +69,7 @@ class LaneDetectionProcessPipeline:
 		right_front_lane_line_detection:lane line detection of right front deadzone cam
 		left_rear_lane_line_detection:	lane line detection of left rear deadzone cam
 		right_rear_lane_line_detection:	lane line detection of right rear deadzone cam
+		vehicle_velocity:				current vehicle speed
 		front_view_check:				check situation in front
 		left_side_view_check:			check situation on left side
 		right_side_view_check:			check situation on right side
@@ -150,6 +152,13 @@ class LaneDetectionProcessPipeline:
 		# notice: this is not real lane width
 		self._lane_width = 3.5
 
+		# vehicle speed
+		self._vehicle_velocity = vehicle_velocity
+
+		# off lane warning
+		self._off_lane_towards_left = False
+		self._off_lane_towards_right = False
+
 
 	@property
 	def distance_from_head_to_left_front_ego_lane_line(self):
@@ -189,6 +198,7 @@ class LaneDetectionProcessPipeline:
 				 right_front_lane_line_detection,
 				 left_rear_lane_line_detection,
 				 right_rear_lane_line_detection,
+				 vehicle_velocity,
 				 front_view_check=None,
 				 left_side_view_check=None,
 				 right_side_view_check=None):
@@ -197,6 +207,8 @@ class LaneDetectionProcessPipeline:
 		self._right_front_lane_line_detection = right_front_lane_line_detection
 		self._left_rear_lane_line_detection = left_rear_lane_line_detection
 		self._right_rear_lane_line_detection = right_rear_lane_line_detection
+		# current speed
+		self._vehicle_velocity = vehicle_velocity
 		# update check
 		self._front_view_check = front_view_check
 		self._left_side_view_check = left_side_view_check
@@ -210,13 +222,26 @@ class LaneDetectionProcessPipeline:
 		assert isinstance(self._left_rear_lane_line_detection, lines), "Wrong type, should be 'lines'!"
 		assert isinstance(self._right_rear_lane_line_detection, lines), "Wrong type, should be 'lines'!"
 
+		prob_threshold = 0.92 
 		# left front
 		if self._left_front_lane_line_detection.line_number > 0:
 			ego_line_lf = None
+			count = 0
 			for i in range(self._left_front_lane_line_detection.line_number):
 				if self._left_front_lane_line_detection.all_lines[i].id == -1:
+					count++
 					ego_line_lf = self._left_front_lane_line_detection.all_lines[i]
 					break
+				elif self._left_front_lane_line_detection.all_lines[i].id == 1:
+					count++
+				else:
+					pass
+
+			# check if off lane
+			if count == 2:
+				self._off_lane_towards_right = True
+			else:
+				self._off_lane_towards_right = False
 
 			if ego_line_lf != None and ego_line_lf.score > prob_threshold:
 				self._left_front_ego_lane_line['positionx'] = np.array(ego_line_lf.positionx)
@@ -237,10 +262,22 @@ class LaneDetectionProcessPipeline:
 		# right front
 		if self._right_front_lane_line_detection.line_number > 0:
 			ego_line_rf = None
+			count = 0
 			for i in range(self._right_front_lane_line_detection.line_number):
 				if self._right_front_lane_line_detection.all_lines[i].id == 1:
+					count++
 					ego_line_rf = self._right_front_lane_line_detection.all_lines[i]
 					break
+				elif self._right_front_lane_line_detection.all_lines[i].id == -1:
+					count++
+				else:
+					pass
+
+			# check if off lane
+			if count == 2:
+				self._off_lane_towards_left = True
+			else:
+				self._off_lane_towards_left = False
 
 			if ego_line_rf != None and ego_line_rf.score > prob_threshold:
 				self._right_front_ego_lane_line['positionx'] = np.array(ego_line_rf.positionx)
@@ -257,7 +294,6 @@ class LaneDetectionProcessPipeline:
 
 		#print("right_front: {}".format(self._right_front_ego_lane_line['positionx']))
 
-		prob_threshold = 0.92 
 		# left rear
 		if self._left_rear_lane_line_detection.line_number > 0:
 			ego_line_lr = None
@@ -265,6 +301,8 @@ class LaneDetectionProcessPipeline:
 				if self._left_rear_lane_line_detection.all_lines[i].id == 1:
 					ego_line_lr = self._left_rear_lane_line_detection.all_lines[i]
 					break
+				else:
+					pass
 
 			if ego_line_lr != None and ego_line_lr.score > prob_threshold:
 				self._left_rear_ego_lane_line['positionx'] = np.array(ego_line_lr.positionx)
@@ -289,6 +327,8 @@ class LaneDetectionProcessPipeline:
 				if self._right_rear_lane_line_detection.all_lines[i].id == -1:
 					ego_line_rr = self._right_rear_lane_line_detection.all_lines[i]
 					break
+				else:
+					pass
 
 			if ego_line_rr != None and ego_line_rr.score > prob_threshold:
 				self._right_rear_ego_lane_line['positionx'] = np.array(ego_line_rr.positionx)
@@ -581,5 +621,9 @@ class LaneDetectionProcessPipeline:
 		
 
 	# off lane check	
-	def off_lane_warning(self):
-		pass
+	def off_lane_towards_left(self):
+		return self._off_lane_towards_left
+
+
+	def off_lane_towards_right(self):
+		return self._off_lane_towards_right
