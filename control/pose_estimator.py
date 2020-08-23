@@ -31,10 +31,10 @@ class PoseEstimator:
 		self._dist_to_left_rear_ego_lane_line = dist_to_left_rear_ego_lane_line
 		self._dist_to_right_rear_ego_lane_line = dist_to_right_rear_ego_lane_line
 		# is ego lane line detected 
-		self._is_left_front_ego_lane_line_detected = is_left_front_ego_lane_line_detected
-		self._is_right_front_ego_lane_line_detected = is_right_front_ego_lane_line_detected
-		self._is_left_rear_ego_lane_line_detected = is_left_rear_ego_lane_line_detected
-		self._is_right_rear_ego_lane_line_detected = is_right_rear_ego_lane_line_detected
+		#self._is_left_front_ego_lane_line_detected = is_left_front_ego_lane_line_detected
+		#self._is_right_front_ego_lane_line_detected = is_right_front_ego_lane_line_detected
+		#self._is_left_rear_ego_lane_line_detected = is_left_rear_ego_lane_line_detected
+		#self._is_right_rear_ego_lane_line_detected = is_right_rear_ego_lane_line_detected
 		# deviation angle
 		self._dev_angle = 0.0
 		# deviation direct relative to lane heading direction

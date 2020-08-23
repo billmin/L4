@@ -52,7 +52,6 @@ class LaneDetectionProcessPipeline:
 				 right_front_lane_line_detection,
 				 left_rear_lane_line_detection,
 				 right_rear_lane_line_detection,
-				 vehicle_velocity,
 				 front_view_check=None,
 				 left_side_view_check=None,
 				 right_side_view_check=None):
@@ -69,7 +68,6 @@ class LaneDetectionProcessPipeline:
 		right_front_lane_line_detection:lane line detection of right front deadzone cam
 		left_rear_lane_line_detection:	lane line detection of left rear deadzone cam
 		right_rear_lane_line_detection:	lane line detection of right rear deadzone cam
-		vehicle_velocity:				current vehicle speed
 		front_view_check:				check situation in front
 		left_side_view_check:			check situation on left side
 		right_side_view_check:			check situation on right side
@@ -137,11 +135,6 @@ class LaneDetectionProcessPipeline:
 		self._distance_from_head_to_right_front_ego_lane_line = 0.0
 		self._distance_from_wheel_to_left_rear_ego_lane_line = 0.0
 		self._distance_from_wheel_to_right_rear_ego_lane_line = 0.0
-		# historical distance list
-		self._historical_distances_from_head_to_left_front_ego_lane_line = []
-		self._historical_distances_from_head_to_right_front_ego_lane_line = []
-		self._historical_distances_from_wheel_to_left_rear_ego_lane_line = []
-		self._historical_distances_from_wheel_to_right_rear_ego_lane_line = []
 
 		# lane detection check
 		self._is_left_front_ego_lane_detected = False
@@ -151,9 +144,6 @@ class LaneDetectionProcessPipeline:
 
 		# notice: this is not real lane width
 		self._lane_width = 3.5
-
-		# vehicle speed
-		self._vehicle_velocity = vehicle_velocity
 
 		# off lane warning
 		self._off_lane_towards_left = False
@@ -207,8 +197,6 @@ class LaneDetectionProcessPipeline:
 		self._right_front_lane_line_detection = right_front_lane_line_detection
 		self._left_rear_lane_line_detection = left_rear_lane_line_detection
 		self._right_rear_lane_line_detection = right_rear_lane_line_detection
-		# current speed
-		self._vehicle_velocity = vehicle_velocity
 		# update check
 		self._front_view_check = front_view_check
 		self._left_side_view_check = left_side_view_check
@@ -229,11 +217,11 @@ class LaneDetectionProcessPipeline:
 			count = 0
 			for i in range(self._left_front_lane_line_detection.line_number):
 				if self._left_front_lane_line_detection.all_lines[i].id == -1:
-					count++
+					count = count + 1
 					ego_line_lf = self._left_front_lane_line_detection.all_lines[i]
 					break
 				elif self._left_front_lane_line_detection.all_lines[i].id == 1:
-					count++
+					count = count + 1
 				else:
 					pass
 
@@ -265,11 +253,11 @@ class LaneDetectionProcessPipeline:
 			count = 0
 			for i in range(self._right_front_lane_line_detection.line_number):
 				if self._right_front_lane_line_detection.all_lines[i].id == 1:
-					count++
+					count = count + 1
 					ego_line_rf = self._right_front_lane_line_detection.all_lines[i]
 					break
 				elif self._right_front_lane_line_detection.all_lines[i].id == -1:
-					count++
+					count = count + 1
 				else:
 					pass
 
@@ -469,12 +457,7 @@ class LaneDetectionProcessPipeline:
 	def update_intercept_with_neighbor_lane_line(self):
 		pass
 
-	def update_all_distances_to_ego_lane_lines(self, c_speed, c_dev_angle, delta_t, maneuvering_type='lane_keep'):
-		'''
-		c_speed:		current vehicle speed
-		c_dev_angle:	current angle between vehicle and lane
-		delta_t:		time cost of each step
-		'''
+	def update_all_distances_to_ego_lane_lines(self):
 		# left front
 		if (self._left_front_intercept_with_ego_lane_line).shape[0] == 2:
 			pix_x, pix_y = self._left_front_intercept_with_ego_lane_line
@@ -508,117 +491,7 @@ class LaneDetectionProcessPipeline:
 			#print("rr: ", self._distance_from_wheel_to_right_rear_ego_lane_line)
 		else:
 			self._distance_from_wheel_to_right_rear_ego_lane_line = None
-		#print("********************************")
 
-		#####################################
-		# size of window of historical data
-		window_size = 10 # FIXME
-
-		def _next_data_approximation(historical_data, current_dev_angle, current_speed, t):
-			if len(historical_data) >= 2:
-				a = historical_data[-2]
-				b = historical_data[-1]
-				# approximate
-				approximate_0 = 2*b-a
-				approximate_1 = b + current_speed*t*np.tan(current_dev_angle*np.pi/180.0)
-				# expected
-				return 0.5*(approximate_0 + approximate_1)
-			elif len(historical_data) == 1:
-				a = historical_data[0]
-				# approximate
-				approximate_0 = a
-				approximate_1 = a + current_speed*t*np.tan(current_dev_angle*np.pi/180.0)
-				# expected
-				return 0.5*(approximate_0 + approximate_1)
-			else:
-				return None
-	
-			'''
-			if len(historical_data) > 0:
-				return historical_data[-1]
-			else:
-				return None
-			'''
-
-		def _outlier_filter(approximate, measured):
-			epsilon = 0.00000001
-			threshold = 0.5
-			if measured == None:
-				return approximate
-			else:
-				if approximate != None:
-					if np.abs(approximate - measured)/(approximate+epsilon) <= threshold:
-						return measured
-					else:
-						return approximate
-				else:
-					return measured
-
-		##
-		next_approximate_distance_left_front = _next_data_approximation(self._historical_distances_from_head_to_left_front_ego_lane_line)
-		next_approximate_distance_right_front = _next_data_approximation(self._historical_distances_from_head_to_right_front_ego_lane_line)
-		next_approximate_distance_left_rear = _next_data_approximation(self._historical_distances_from_wheel_to_left_rear_ego_lane_line)
-		next_approximate_distance_right_rear = _next_data_approximation(self._historical_distances_from_wheel_to_right_rear_ego_lane_line)
-
-		if maneuvering_type == 'lane_keep':
-			## lf
-			if self._distance_from_head_to_left_front_ego_lane_line == None:
-				self._distance_from_head_to_left_front_ego_lane_line = next_approximate_distance_left_front
-			else:
-				# filtering left front
-				filtered = _outlier_filter(next_approximate_distance_left_front, self._distance_from_head_to_left_front_ego_lane_line)
-				self._distance_from_head_to_left_front_ego_lane_line = filtered
-
-			self._historical_distances_from_head_to_left_front_ego_lane_line.append(self._distance_from_head_to_left_front_ego_lane_line)
-			print("lf: ", self._distance_from_head_to_left_front_ego_lane_line)
-
-			## rf
-			if self._distance_from_head_to_right_front_ego_lane_line == None:
-				self._distance_from_head_to_right_front_ego_lane_line = next_approximate_distance_right_front
-			else:
-				# filtering right front
-				filtered = _outlier_filter(next_approximate_distance_right_front, self._distance_from_head_to_right_front_ego_lane_line)
-				self._distance_from_head_to_right_front_ego_lane_line = filtered
-
-			self._historical_distances_from_head_to_right_front_ego_lane_line.append(self._distance_from_head_to_right_front_ego_lane_line)
-			print("rf: ", self._distance_from_head_to_right_front_ego_lane_line)
-
-			## lr
-			if self._distance_from_wheel_to_left_rear_ego_lane_line == None:
-				self._distance_from_wheel_to_left_rear_ego_lane_line = next_approximate_distance_left_rear
-			else:
-				# filtering left rear
-				filtered = _outlier_filter(next_approximate_distance_left_rear, self._distance_from_wheel_to_left_rear_ego_lane_line)
-				self._distance_from_wheel_to_left_rear_ego_lane_line = filtered
-
-			self._historical_distances_from_wheel_to_left_rear_ego_lane_line.append(self._distance_from_wheel_to_left_rear_ego_lane_line)
-			print("lr: ", self._distance_from_wheel_to_left_rear_ego_lane_line)
-
-			## rr
-			if self._distance_from_wheel_to_right_rear_ego_lane_line == None:
-				self._distance_from_wheel_to_right_rear_ego_lane_line = next_approximate_distance_right_rear
-			else:
-				# filtering right rear
-				filtered = _outlier_filter(next_approximate_distance_right_rear, self._distance_from_wheel_to_right_rear_ego_lane_line)
-				self._distance_from_wheel_to_right_rear_ego_lane_line = filtered
-
-			self._historical_distances_from_wheel_to_right_rear_ego_lane_line.append(self._distance_from_wheel_to_right_rear_ego_lane_line)
-			print("rr: ", self._distance_from_wheel_to_right_rear_ego_lane_line)
-			print("************************")
-
-			# length truncated to be sized 50
-			if len(self._historical_distances_from_head_to_left_front_ego_lane_line) > window_size:
-				self._historical_distances_from_head_to_left_front_ego_lane_line.pop(0)
-				self._historical_distances_from_head_to_right_front_ego_lane_line.pop(0)
-				self._historical_distances_from_wheel_to_left_rear_ego_lane_line.pop(0)
-				self._historical_distances_from_wheel_to_right_rear_ego_lane_line.pop(0)
-
-		elif maneuvering_type == 'lane_change':
-			self._historical_distances_from_head_to_left_front_ego_lane_line = []
-			self._historical_distances_from_head_to_right_front_ego_lane_line = []
-			self._historical_distances_from_wheel_to_left_rear_ego_lane_line = []
-			self._historical_distances_from_wheel_to_right_rear_ego_lane_line = []
-		
 
 	# off lane check	
 	def off_lane_towards_left(self):

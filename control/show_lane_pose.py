@@ -7,10 +7,12 @@ import rospy
 from std_msgs.msg import Float32, Float32MultiArray, Int8
 from cqpilot_msg.msg import mmt_line
 from cqpilot_msg.msg import lines
-from lane_detection_process_pipeline import LaneDetectionProcessPipeline
 from pose_estimator import PoseEstimator
 from configparser import ConfigParser
 import json
+
+from lane_detection_process_pipeline import LaneDetectionProcessPipeline
+from vehicle_lane_position_secondary_process import check_validity_of_all_distances_to_ego_lane_lines
 
 '''
 std_msgs/Header header
@@ -46,6 +48,10 @@ def callback_detected_right_rear_lane_lines(detected_lines):
 	global all_detected_lines_rr
 	all_detected_lines_rr = detected_lines
 
+def callback_vehicle_speed(speed):
+	global c_speed
+	c_speed = speed
+
 
 def listener():
 	rospy.init_node("show_vehicle_pose_in_lane", anonymous=True)
@@ -54,6 +60,7 @@ def listener():
 	rospy.Subscriber("/detection/lines/deadzone_rf", lines, callback_detected_right_front_lane_lines, queue_size=1)
 	rospy.Subscriber("/detection/lines/deadzone_lr", lines, callback_detected_left_rear_lane_lines, queue_size=1)
 	rospy.Subscriber("/detection/lines/deadzone_rr", lines, callback_detected_right_rear_lane_lines, queue_size=1)
+	rospy.Subscriber("/can5/speed", Float32, callback_vehicle_speed, queue_size=1)
 
 	rate = rospy.Rate(20)
 
@@ -69,34 +76,36 @@ def listener():
 	# right rear
 	global all_detected_lines_rr
 	all_detected_lines_rr = lines()
+	# vehicle speed
+	global c_speed
+	c_speed = Float32(0.0)
 
 	# left front ref 
-	with open('./dat/lf_ref.json', 'r') as file:
-		left_front_ref = json.load(file)
+	with open('./dat/lf_ref.json', 'r') as f:
+		left_front_ref = json.load(f)
 	# right front ref
-	with open('./dat/rf_ref.json', 'r') as file:
-		right_front_ref = json.load(file)
+	with open('./dat/rf_ref.json', 'r') as f:
+		right_front_ref = json.load(f)
 	# left rear ref
-	with open('./dat/lr_ref.json', 'r') as file:
-		left_rear_ref = json.load(file)
+	with open('./dat/lr_ref.json', 'r') as f:
+		left_rear_ref = json.load(f)
 	# right rear ref
-	with open('./dat/rr_ref.json', 'r') as file:
-		right_rear_ref = json.load(file)
+	with open('./dat/rr_ref.json', 'r') as f:
+		right_rear_ref = json.load(f)
 
 	# left front pix2real map
-	with open('./dat/pix2real_lf.json', 'r') as file:
-		left_front_pix_real_pos_map = json.load(file)
+	with open('./dat/pix2real_lf.json', 'r') as f:
+		left_front_pix_real_pos_map = json.load(f)
 	# right front pix2real map
-	with open('./dat/pix2real_rf.json', 'r') as file:
-		right_front_pix_real_pos_map = json.load(file)
+	with open('./dat/pix2real_rf.json', 'r') as f:
+		right_front_pix_real_pos_map = json.load(f)
 	# left rear pix2real map
-	with open('./dat/pix2real_lr.json', 'r') as file:
-		left_rear_pix_real_pos_map = json.load(file)
+	with open('./dat/pix2real_lr.json', 'r') as f:
+		left_rear_pix_real_pos_map = json.load(f)
 	# right rear pix2real map
-	with open('./dat/pix2real_rr.json', 'r') as file:
-		right_rear_pix_real_pos_map = json.load(file)
+	with open('./dat/pix2real_rr.json', 'r') as f:
+		right_rear_pix_real_pos_map = json.load(f)
 	
-
 	# lane process
 	ldpp = LaneDetectionProcessPipeline(left_front_pix_real_pos_map,
 										right_front_pix_real_pos_map,
@@ -139,15 +148,17 @@ def listener():
 	initialized = False
 	no_cycle_print = False
 
-	while not rospy.is_shutdown():
-		#num_l = all_detected_lines_lf.line_number
-		#print("*** number of lines: {}".format(num_l))
-		#for i in range(num_l):
-		#	print(all_detected_lines_lf.all_lines[i].id)
+	# size of window of historical data
+	window_size = 10 # FIXME
+	historical_distances_from_head_to_left_front_ego_lane_line = []
+	historical_distances_from_head_to_right_front_ego_lane_line = []
+	historical_distances_from_wheel_to_left_rear_ego_lane_line = []
+	historical_distances_from_wheel_to_right_rear_ego_lane_line = []
 
-		#if all_detected_lines_lf.line_number > 0:
-		#	print(type(all_detected_lines_lf.all_lines[0].positionx))
-		
+	# last moment
+	last_moment = time.time()
+
+	while not rospy.is_shutdown():
 		# update
 		ldpp(all_detected_lines_lf,
 			 all_detected_lines_rf,
@@ -171,6 +182,31 @@ def listener():
 		else:
 			ldpp.update_intercepts_with_ego_lane_lines()
 			ldpp.update_all_distances_to_ego_lane_lines()
+
+			if ldpp.distance_from_head_to_left_front_ego_lane_line==None:
+				historical_distances_from_head_to_left_front_ego_lane_line = []
+			if ldpp.distance_from_head_to_right_front_ego_lane_line==None:
+				historical_distances_from_head_to_right_front_ego_lane_line = []
+			if ldpp.distance_from_head_to_left_rear_ego_lane_line==None:
+				historical_distances_from_head_to_left_rear_ego_lane_line = []
+			if ldpp.distance_from_head_to_right_rear_ego_lane_line==None:
+				historical_distances_from_head_to_right_rear_ego_lane_line = []
+
+			# check the validity of updated distances
+			lf_maybe_outlier, rf_maybe_outlier, lr_maybe_outlier, rr_maybe_outlier, assessed_lf, assessed_rf, assessed_lr, assessed_rr = vehicle_lane_position_secondary_process.check_validity_of_all_distances_to_ego_lane_lines(c_speed,
+												 pe.dev_angle,
+												 ldpp.distance_from_head_to_left_front_ego_lane_line,
+												 ldpp.distance_from_head_to_right_front_ego_lane_line,
+												 ldpp.distance_from_wheel_to_left_rear_ego_lane_line,
+												 ldpp.distance_from_wheel_to_right_rear_ego_lane_line,
+												 historical_distances_from_head_to_left_front_ego_lane_line,
+												 historical_distances_from_head_to_right_front_ego_lane_line,
+												 historical_distances_from_wheel_to_left_rear_ego_lane_line,
+												 historical_distances_from_wheel_to_right_rear_ego_lane_line)
+
+			current_moment = time.time()
+			elapsed_time = current_moment - last_moment
+
 			pe(ldpp.distance_from_head_to_left_front_ego_lane_line,
 		   	   ldpp.distance_from_head_to_right_front_ego_lane_line,
 		   	   ldpp.distance_from_wheel_to_left_rear_ego_lane_line,
@@ -184,6 +220,8 @@ def listener():
 			#print(ldpp.distance_from_wheel_to_left_rear_ego_lane_line, ldpp.distance_from_wheel_to_right_rear_ego_lane_line)
 			#print("**************************")
 		rate.sleep()
+		# update last moment
+		last_moment = current_moment
 
 	rospy.spin()	
 
